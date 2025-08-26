@@ -1,5 +1,5 @@
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar";
 
 export default function RootLayout({
@@ -13,7 +13,6 @@ export default function RootLayout({
          <SidebarProvider defaultOpen={false}>
           <AppSidebar />
           <main>
-            <SidebarTrigger />
             {children}
           </main>
         </SidebarProvider>
