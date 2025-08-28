@@ -2,20 +2,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap");
 @import "tw-animate-css";
 
-
 :root {
-  /* Cores base */
   --branco: #FFFFFF;
   --preto: #000000;
 
-  /* Verde */
   --verde-900: #065F46;
   --verde-800: #047857;
   --verde-700: #059669;
   --verde-600: #41AE8C;
   --verde-400: #6EE7B7;
 
-  /* Cinza */
   --cinza-100: #F5F5F5;
   --cinza-200: #F8F7F7;
   --cinza-300: #EAEAEA;
@@ -25,40 +21,38 @@
   --cinza-700: #2D2D2D;
   --cinza-800: #121212;
 
-  /* Amarelo */
   --amarelo-100: #FDFBEF;
   --amarelo-200: #FFF9D4;
 
-  /* Background */
-  --background: #FFFEF6; 
-
-  /* Cores de status */
+  --background: #FFFEF6;
   --error: #EF4444;
   --warning: #FFCC00;
   --success: #5C8F0E;
 
-  /* Fontes */
   --font-roboto: "Roboto", sans-serif;
 
+  --sidebar: var(--verde-900);
+  --sidebar-foreground: var(--branco);
+  --sidebar-primary: var(--cinza-800);
+  --sidebar-primary-foreground: var(--branco);
+  --sidebar-accent: var(--cinza-600);
+  --sidebar-accent-foreground: var(--branco);
+  --sidebar-border: var(--cinza-400);
+  --sidebar-ring: rgba(6, 95, 70, 0.35);
 }
 
 body {
   font-family: var(--font-roboto);
   background-color: var(--background);
-
 }
 
-@layer base {
-  :root {
-    --sidebar: var(--verde-900);
-    --sidebar-foreground: var(--branco);
-    --sidebar-primary: var(--cinza-800);
-    --sidebar-primary-foreground: var(--branco);
-    --sidebar-accent: var(--cinza-600);
-    --sidebar-accent-foreground: var(--branco);
-    --sidebar-border: var(--cinza-400);
-  }
- 
+.dark {
+  --background: #0B0B0B;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #e2e8f0;
+  --sidebar-accent: #1e293b;
+  --sidebar-border: #334155;
+  --sidebar-ring: rgba(14, 165, 233, 0.35);
 }
 
 @layer utilities {

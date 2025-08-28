@@ -5,6 +5,7 @@ import Image from "next/image"
 import { 
   ChevronDown, 
   ChevronUp, 
+  LayoutDashboard, 
   User2 
 } from "lucide-react"
 
@@ -70,6 +71,11 @@ const items = [
         title: 'Pesquisar Colaborador',
         url: '#',
         icon: Search,
+    },
+     {
+        title: 'Dashboard',
+        url: '#',
+        icon: LayoutDashboard,
     },
      {
         title: 'Histórico',
@@ -185,13 +191,7 @@ export function AppSidebar() {
                   className="w-[--radix-popper-anchor-width]"
                 >
                   <DropdownMenuItem>
-                    <span>Account</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span>Billing</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <span>Sign out</span>
+                    <span className="text-white">Sair</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
