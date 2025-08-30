@@ -1,22 +1,12 @@
-import "./globals.css";
-import { SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar";
+import './globals.css';
+import type { Metadata } from 'next';
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const metadata: Metadata = {title: 'Gestão de Benefícios'}
+
+export default function RootLayout({children}: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen flex">
-         <SidebarProvider defaultOpen={false}>
-          <AppSidebar />
-          <main>
-            {children}
-          </main>
-        </SidebarProvider>
-      </body>
+    <html lang='pt-BR'>
+      <body>{children}</body>
     </html>
-  );
+  )
 }
