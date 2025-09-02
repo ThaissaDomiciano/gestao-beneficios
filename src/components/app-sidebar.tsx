@@ -47,6 +47,8 @@ import {
 
 import { useRef } from "react"
 import { useClickAway } from "react-use"
+import { useRouter } from "next/navigation"
+import { ca } from "zod/v4/locales"
 
 const items = [
   { title: "Home", url: "#", icon: Home },
@@ -68,6 +70,7 @@ const items = [
 function InnerSidebar() {
   const { open, setOpen } = useSidebar()
   const ref = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   useClickAway(ref, () => { if (open) setOpen(false) })
 
@@ -76,6 +79,18 @@ function InnerSidebar() {
       setOpen(true)
       const actionable = (e.target as HTMLElement)?.closest("a,button,[role='menuitem']")
       if (actionable) e.preventDefault()
+    }
+  }
+
+  async function handleLogout() {
+    try{
+      await fetch("/api/auth/logout", { 
+        method: "POST",
+        credentials: "include"
+      })
+      router.replace("/login")
+    } catch(err) {
+      console.error("Falha no logout", err)
     }
   }
 
@@ -155,7 +170,12 @@ function InnerSidebar() {
                   side="top"
                   className="w-[--radix-popper-anchor-width] border border-white"
                 >
-                  <DropdownMenuItem>
+                  <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault()
+                    handleLogout()
+                  }}
+                  >
                     <span className="text-white">Sair</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
