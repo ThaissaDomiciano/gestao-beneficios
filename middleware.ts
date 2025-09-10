@@ -1,33 +1,32 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-const COOKIE = process.env.JWT_COOKIE_NAME ?? 'gb_token';
+const COOKIE = process.env.JWT_COOKIE_NAME ?? 'gb_token'
 
 export function middleware(req: NextRequest) {
-  const { pathname } = req.nextUrl;
-  const token = req.cookies.get(COOKIE)?.value;
+  const { pathname } = req.nextUrl
+  const token = req.cookies.get(COOKIE)?.value
+  const isLogin = pathname === '/login'
 
-  const isAuthGroup = pathname.startsWith('/login') || pathname.startsWith('/(auth)');
-  const isAppGroup  = pathname.startsWith('/(app)') || pathname.startsWith('/home');
-
-  // Bloqueia app sem token
-  if (isAppGroup && !token) {
-    const url = req.nextUrl.clone();
-    url.pathname = '/login';
-    url.searchParams.set('from', pathname);
-    return NextResponse.redirect(url);
+  // não logado e tentando qualquer rota que não seja /login
+  if (!token && !isLogin) {
+    const url = req.nextUrl.clone()
+    url.pathname = '/login'
+    url.searchParams.set('from', pathname)
+    return NextResponse.redirect(url)
   }
 
-  // Usuário logado acessando /login → manda pro home
-  if (isAuthGroup && token && pathname === '/login') {
-    const url = req.nextUrl.clone();
-    url.pathname = '/home';
-    return NextResponse.redirect(url);
+  // logado tentando /login → manda pra /home
+  if (token && isLogin) {
+    const url = req.nextUrl.clone()
+    url.pathname = '/home'
+    return NextResponse.redirect(url)
   }
 
-  return NextResponse.next();
+  return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/((?!_next|api|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)).*)'],
-};
+  // aplica em tudo que não é asset/arquivo estático
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+}

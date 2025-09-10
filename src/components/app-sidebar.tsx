@@ -19,7 +19,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
   useSidebar
 } from "@/components/ui/sidebar"
 
@@ -48,15 +47,14 @@ import {
 import { useRef } from "react"
 import { useClickAway } from "react-use"
 import { useRouter } from "next/navigation"
-import { ca } from "zod/v4/locales"
 
 const items = [
-  { title: "Home", url: "#", icon: Home },
+  { title: "Home", url: "/home", icon: Home },
   {
     title: "Cadastro",
     icon: CirclePlus,
     children: [
-      { title: "Cadastro de Médico", url: "#" },
+      { title: "Cadastro de Médico", url: "/home/cadastro-medico" },
       { title: "Cadastro de Benefício", url: "#" },
     ],
   },
@@ -89,109 +87,118 @@ function InnerSidebar() {
         credentials: "include"
       })
       router.replace("/login")
-    } catch(err) {
-      console.error("Falha no logout", err)
-    }
+    } catch {}
   }
 
   return (
-    <div ref={ref} className="relative">
-      <Sidebar
-        collapsible="icon"
-        onPointerDownCapture={handleOpenOnPointerDownCapture}
-        className="group bg-sidebar text-sidebar-foreground
-        [--sidebar-width:230px] [--sidebar-width-icon:60px]"
-      >
-        <SidebarHeader>
-          <div className="gap-3 px-2 py-4">
-            <Image src="/logo.svg" alt="Logo" width={40} height={40} />
-          </div>
-        </SidebarHeader>
+    <>
+      <div
+        aria-hidden={!open}
+        className={`fixed inset-0 z-40 bg-black/40 transition-opacity ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        onClick={() => setOpen(false)}
+      />
+      <div ref={ref} className="relative z-50">
+        <Sidebar
+          variant="floating"
+          collapsible="icon"
+          onPointerDownCapture={handleOpenOnPointerDownCapture}
+           className="group bg-sidebar text-sidebar-foreground
+                      [--sidebar-width:230px] [--sidebar-width-icon:60px]
+                      [--sidebar-border:transparent]           
+                      border-0 ring-0 shadow-none outline-none 
 
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    {item.children ? (
-                      <Collapsible className="group/c">
-                        <CollapsibleTrigger asChild>
-                          <SidebarMenuButton className="gap-2 [&>svg]:h-6 [&>svg]:w-6">
+                      [&_[data-sidebar='sidebar']]:border-0  
+                      [&_[data-sidebar='sidebar']]:ring-0
+                      [&_[data-sidebar='rail']]:border-0      
+                      [&_[data-sidebar='content']]:border-0
+                      [&_[data-sidebar='footer']]:border-0"
+        >
+          <SidebarHeader>
+            <div className="gap-3 px-2 py-4">
+              <Image src="/logo.svg" alt="Logo" width={40} height={40} />
+            </div>
+          </SidebarHeader>
+
+          <SidebarContent>
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {items.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      {item.children ? (
+                        <Collapsible className="group/c">
+                          <CollapsibleTrigger asChild>
+                            <SidebarMenuButton className="gap-2 [&>svg]:h-6 [&>svg]:w-6">
+                              <item.icon />
+                              <span className="truncate">{item.title}</span>
+                              <ChevronDown
+                                className="ml-auto h-4 w-4 transition-transform group-data-[state=open]/c:rotate-180"
+                              />
+                            </SidebarMenuButton>
+                          </CollapsibleTrigger>
+
+                          <CollapsibleContent className="group-data-[collapsible=icon]:hidden">
+                            <div className="mt-1 ml-9 flex flex-col gap-2 pb-2">
+                              {item.children.map((sub) => (
+                                <Link
+                                  key={sub.title}
+                                  href={sub.url}
+                                  className="text-sm opacity-90 hover:opacity-100"
+                                >
+                                  {sub.title}
+                                </Link>
+                              ))}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      ) : (
+                        <SidebarMenuButton asChild className="gap-2 [&>svg]:h-6 [&>svg]:w-6">
+                          <Link href={item.url}>
                             <item.icon />
-                            <span className="truncate">{item.title}</span>
-                            <ChevronDown
-                              className="ml-auto h-4 w-4 transition-transform
-                              group-data-[state=open]/c:rotate-180"
-                            />
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
+                            <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      )}
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
 
-                        <CollapsibleContent className="group-data-[collapsible=icon]:hidden">
-                          <div className="mt-1 ml-9 flex flex-col gap-2 pb-2">
-                            {item.children.map((sub) => (
-                              <Link
-                                key={sub.title}
-                                href={sub.url}
-                                className="text-sm opacity-90 hover:opacity-100"
-                              >
-                                {sub.title}
-                              </Link>
-                            ))}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    ) : (
-                      <SidebarMenuButton asChild className="gap-2 [&>svg]:h-6 [&>svg]:w-6">
-                        <Link href={item.url}>
-                          <item.icon />
-                          <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    )}
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-
-        <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton className="bg-emerald-700">
-                    <User2 /> Username
-                    <ChevronUp className="ml-auto" />
-                  </SidebarMenuButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  side="top"
-                  className="w-[--radix-popper-anchor-width] border border-white"
-                >
-                  <DropdownMenuItem
-                  onSelect={(e) => {
-                    e.preventDefault()
-                    handleLogout()
-                  }}
+          <SidebarFooter>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton className="bg-emerald-700">
+                      <User2 /> Username
+                      <ChevronUp className="ml-auto" />
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="top"
+                    className="w-[--radix-popper-anchor-width] border border-[var(--branco)]"
                   >
-                    <span className="text-white">Sair</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-    </div>
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault()
+                        handleLogout()
+                      }}
+                    >
+                      <span className="text-white">Sair</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarFooter>
+        </Sidebar>
+      </div>
+    </>
   )
 }
 
 export function AppSidebar() {
-  return (
-    <SidebarProvider defaultOpen={false}>
-      <InnerSidebar />
-    </SidebarProvider>
-  )
+  return <InnerSidebar />
 }
