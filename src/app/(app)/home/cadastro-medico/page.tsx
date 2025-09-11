@@ -1,6 +1,6 @@
 'use client'
 
-import * as React from 'react'
+import { useEffect, useState } from 'react'
 import {z} from 'zod'
 import {useForm} from 'react-hook-form'
 import {zodResolver} from '@hookform/resolvers/zod'
@@ -41,10 +41,10 @@ const medicoSchema = z.object({
 type MedicoFormData = z.infer<typeof medicoSchema>;
 
 export default function CadastroMedico() {
-  const [loading, setLoading] = React.useState(false);
-  const [especialidades, setEspecialidades] = React.useState<Especialidade[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [especialidades, setEspecialidades] = useState<Especialidade[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetch("/api/especialidades")
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data: Especialidade[]) => setEspecialidades(data))

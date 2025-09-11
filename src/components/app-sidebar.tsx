@@ -5,7 +5,6 @@ import Image from "next/image"
 import {
   ChevronDown,
   ChevronUp,
-  LayoutDashboard,
   User2
 } from "lucide-react"
 
@@ -55,14 +54,13 @@ const items = [
     icon: CirclePlus,
     children: [
       { title: "Cadastro de Médico", url: "/home/cadastro-medico" },
-      { title: "Cadastro de Benefício", url: "#" },
+      { title: "Cadastro de Benefício", url: "/home/cadastro-beneficio" },
     ],
   },
-  { title: "Agendamento", url: "#", icon: BookMinus },
-  { title: "Aprovação de Benefício", url: "#", icon: CircleCheckBig },
-  { title: "Pesquisar Colaborador", url: "#", icon: Search },
-  { title: "Dashboard", url: "#", icon: LayoutDashboard },
-  { title: "Histórico", url: "#", icon: History },
+  { title: "Agendamento", url: "/home/agendamento", icon: BookMinus },
+  { title: "Aprovação de Benefício", url: "/home/aprovacao-beneficio", icon: CircleCheckBig },
+  { title: "Pesquisar Colaborador", url: "/home/pesquisar-colaborador", icon: Search },
+  { title: "Histórico", url: "/home/historico", icon: History },
 ]
 
 function InnerSidebar() {
