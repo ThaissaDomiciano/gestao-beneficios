@@ -10,6 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { z } from "zod"
+import { getAuthHeader } from "@/app/api/lib/authHeader";
+
+const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
 const beneficioSchema = z.object({
   nome: z.string().min(3, "O nome é obrigatório"),
@@ -36,9 +39,9 @@ export default function CadastroBeneficio() {
           descricao: values.descricao
         } 
 
-        const res = await fetch("api/beneficios", {
-          method: "post",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch(`${api}/beneficio`, {
+          method: "POST",
+          headers: getAuthHeader({ withJsonBody: true }),
           body: JSON.stringify(payload),
         });
 
