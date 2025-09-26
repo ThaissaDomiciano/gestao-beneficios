@@ -54,22 +54,10 @@ export default function CadastroMedico() {
   const [response, setResponse] = useState<ApiResponse<Especialidade[]> | null>(null);
  
   useEffect(() => {
-    const token = localStorage.getItem('gb_token');
-    console.log(token)
- 
-    if (!token) {
-      toast.error("Sessão inválida ou expirada. Faça login novamente.");
-      window.location.href = '/login';
-      return; 
-    }
 
     fetch(`${api}/especialidade`, {
       method: 'GET', 
-      headers: {
-        'Content-Type': 'application/json',
-        // O header de autorização com o token JWT
-        'Authorization': `Bearer ${token}`
-      }
+      headers: getAuthHeader(),
     })
       .then((r) => {
         if (r.status === 401 || r.status === 403) {
@@ -124,7 +112,7 @@ export default function CadastroMedico() {
     try {
       const res = await fetch(`${api}/especialidade`, {
         method: "POST",
-        headers: getAuthHeader(),
+        headers: getAuthHeader({ withJsonBody: true }),
         body: JSON.stringify({ nome }),
       });
       if (!res.ok) {
@@ -156,7 +144,7 @@ export default function CadastroMedico() {
       };
       const res = await fetch(`${api}/medico`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeader({ withJsonBody: true }),
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
