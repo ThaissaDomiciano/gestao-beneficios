@@ -78,15 +78,11 @@ function InnerSidebar() {
     }
   }
 
-  async function handleLogout() {
-    try{
-      await fetch("/api/auth/logout", { 
-        method: "POST",
-        credentials: "include"
-      })
-      router.replace("/login")
-    } catch {}
-  }
+ async function handleLogout() {
+  const STORAGE_KEY = "gb_token";
+  localStorage.removeItem(STORAGE_KEY);
+  router.replace("/login");
+}
 
   return (
     <>

@@ -1,21 +1,27 @@
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
-import { AppSidebar } from "@/components/app-sidebar"
-import { SidebarProvider } from "@/components/ui/sidebar"
+"use client";
 
-const COOKIE = "gb_token"
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(COOKIE)?.value
+const STORAGE_KEY = "gb_token";
 
-  if (!token) {
-    redirect("/login")
-  }
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [allowed, setAllowed] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem(STORAGE_KEY);
+    if (!token) {
+      router.replace('/login');
+      return;
+    }
+    setAllowed(true);
+  }, [router, pathname]);
+
+  if (!allowed) return null; 
 
   return (
     <SidebarProvider defaultOpen={false}>
@@ -24,5 +30,5 @@ export default async function AppLayout({
         <main className="p-6">{children}</main>
       </div>
     </SidebarProvider>
-  )
+  );
 }

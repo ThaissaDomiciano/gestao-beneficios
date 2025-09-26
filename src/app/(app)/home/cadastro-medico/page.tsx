@@ -1,5 +1,5 @@
 'use client'
-
+ 
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
@@ -7,17 +7,20 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label"; 
+import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Stethoscope, Plus } from "lucide-react";
-
+import { ApiResponse } from '@/types/apiResponse'
+import { get } from 'http'
+import { getAuthHeader } from '@/app/api/lib/authHeader'
+ 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
-
+ 
 type Especialidade = { id: string; nome: string };
-
+ 
 const dias = [
   "Segunda",
   "Terça",
@@ -27,9 +30,9 @@ const dias = [
   "Sábado",
   "Domingo",
 ] as const;
-
+ 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
-
+ 
 const medicoSchema = z.object({
   nome: z.string().min(3, "Informe o nome"),
   email: z.string().email("E-mail inválido"),
@@ -41,21 +44,55 @@ const medicoSchema = z.object({
   horaSaida: z.string().regex(timeRegex, "Formato HH:MM"),
 });
 type MedicoFormData = z.infer<typeof medicoSchema>;
-
+ 
 export default function CadastroMedico() {
   const [loading, setLoading] = useState(false);
   const [especialidades, setEspecialidades] = useState<Especialidade[]>([]);
   const [openEsp, setOpenEsp] = useState(false);
   const [nomeEsp, setNomeEsp] = useState("");
   const [savingEsp, setSavingEsp] = useState(false);
-
+  const [response, setResponse] = useState<ApiResponse<Especialidade[]> | null>(null);
+ 
   useEffect(() => {
-    fetch(`${api}/especialidade`)
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data: Especialidade[]) => setEspecialidades(data))
-      .catch(() => toast.error("Não foi possível carregar especialidades."));
-  }, []);
+    const token = localStorage.getItem('gb_token');
+    console.log(token)
+ 
+    if (!token) {
+      toast.error("Sessão inválida ou expirada. Faça login novamente.");
+      window.location.href = '/login';
+      return; 
+    }
 
+    fetch(`${api}/especialidade`, {
+      method: 'GET', 
+      headers: {
+        'Content-Type': 'application/json',
+        // O header de autorização com o token JWT
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then((r) => {
+        if (r.status === 401 || r.status === 403) {
+          toast.error("Acesso negado. Sua sessão pode ter expirado.");
+          return Promise.reject('Acesso negado');
+        }
+        if (!r.ok) {
+          return Promise.reject('Erro na resposta da API');
+        }
+        return r.json();
+      })
+      .then((data: ApiResponse<Especialidade[]>) => {
+        setEspecialidades(data.data);
+        setResponse(data);
+      })
+      .catch((error) => {
+        console.error("Erro ao carregar especialidades:", error);
+        if (error !== 'Acesso negado') {
+          toast.error("Não foi possível carregar especialidades.");
+        }
+      });
+  }, []);
+ 
   const form = useForm<MedicoFormData>({
     resolver: zodResolver(medicoSchema),
     defaultValues: {
@@ -69,7 +106,7 @@ export default function CadastroMedico() {
       horaSaida: "17:00",
     },
   });
-
+ 
   function timeToMin(t: string) {
     const [h, m] = t.split(":").map(Number);
     return h * 60 + m;
@@ -82,12 +119,12 @@ export default function CadastroMedico() {
     if (!(e < p && p <= vlt && vlt < s))
       throw new Error("Ordem inválida dos horários (Entrada < Pausa ≤ Volta < Saída).");
   }
-
+ 
   async function criarEspecialidade(nome: string) {
     try {
       const res = await fetch(`${api}/especialidade`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeader(),
         body: JSON.stringify({ nome }),
       });
       if (!res.ok) {
@@ -102,7 +139,7 @@ export default function CadastroMedico() {
       toast.error(e?.message ?? "Tente novamente");
     }
   }
-
+ 
   async function onSubmit(values: MedicoFormData) {
     setLoading(true);
     try {
@@ -134,7 +171,7 @@ export default function CadastroMedico() {
       setLoading(false);
     }
   }
-
+ 
   return (
     <main className="min-h-screen w-screen max-w-none">
       <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
@@ -248,11 +285,11 @@ export default function CadastroMedico() {
                 </div>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {(["horaEntrada","horaPausa","horaVolta","horaSaida"] as const).map((n,i)=>(  
+                {(["horaEntrada", "horaPausa", "horaVolta", "horaSaida"] as const).map((n, i) => (
                   <div key={n} className="lg:col-span-3 col-span-12">
                     <FormField name={n} control={form.control} render={({ field }) => (
                       <FormItem className="space-y-2">
-                        <FormLabel>{["Hora Entrada","Hora Pausa","Hora Volta","Hora Saída"][i]}</FormLabel>
+                        <FormLabel>{["Hora Entrada", "Hora Pausa", "Hora Volta", "Hora Saída"][i]}</FormLabel>
                         <FormControl>
                           <Input type="time" className="w-full h-11" {...field} />
                         </FormControl>
