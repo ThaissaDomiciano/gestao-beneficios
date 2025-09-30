@@ -261,9 +261,9 @@ export default function CadastroMedico() {
                             <SelectValue placeholder="Selecione a especialidade" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className='bg-[var(--cinza-200)]'>
                           {especialidades.map(e => (
-                            <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
+                            <SelectItem  key={e.id} value={e.id}>{e.nome}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

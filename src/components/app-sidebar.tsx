@@ -3,6 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import {
+  CalendarDays,
   ChevronDown,
   ChevronUp,
   User2
@@ -22,7 +23,6 @@ import {
 } from "@/components/ui/sidebar"
 
 import {
-  BookMinus,
   CircleCheckBig,
   CirclePlus,
   History,
@@ -57,7 +57,7 @@ const items = [
       { title: "Cadastro de Benefício", url: "/home/cadastro-beneficio" },
     ],
   },
-  { title: "Agendamento", url: "/home/agendamento", icon: BookMinus },
+  { title: "Agendamento", url: "/home/agendamento", icon: CalendarDays },
   { title: "Aprovação de Benefício", url: "/home/aprovacao-beneficio", icon: CircleCheckBig },
   { title: "Pesquisar Colaborador", url: "/home/pesquisar-colaborador", icon: Search },
   { title: "Histórico", url: "/home/historico", icon: History },
