@@ -44,6 +44,9 @@ const dados: Colaborador[] = [
 ]
 
 export default function PesquisarColaborador() {
+  const [selectedTab, setSelectedTab] = useState<"consultas" | "beneficios">(
+    "consultas"
+  );
   const [selected, setSelected] = useState<Colaborador | null>(null)
 
   return (
@@ -117,10 +120,7 @@ export default function PesquisarColaborador() {
                         </SheetTrigger>
                         <SheetContent className="bg-[var(--cinza-100)] p-4">
                           <SheetHeader>
-                            <SheetTitle>Detalhes do Colaborador</SheetTitle>
-                            <SheetDescription>
-                              Informações completas
-                            </SheetDescription>
+                            <SheetTitle>Histórico do Colaborador</SheetTitle>
                           </SheetHeader>
                           {selected && (
                             <div className="mt-4 space-y-2">
@@ -130,21 +130,31 @@ export default function PesquisarColaborador() {
                               <p>
                                 <strong>Nome:</strong> {selected.nome}
                               </p>
-                              <p>
-                                <strong>Data Nascimento:</strong>{" "}
-                                {selected.dataNascimento}
-                              </p>
-                              <p>
-                                <strong>Função:</strong> {selected.funcao}
-                              </p>
-                              <p>
-                                <strong>Gênero:</strong> {selected.genero}
-                              </p>
-                              <p>
-                                <strong>Cidade:</strong> {selected.cidade}
-                              </p>
                             </div>
                           )}
+                           <div className="mt-6 flex gap-4">
+                            <button
+                              onClick={() => setSelectedTab("consultas")}
+                              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${
+                                selectedTab === "consultas"
+                                  ? "bg-[var(--verde-800)] text-white border-[var(--verde-800)]"
+                                  : "bg-white text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                              }`}
+                            >
+                              Consultas
+                            </button>
+
+                            <button
+                              onClick={() => setSelectedTab("beneficios")}
+                              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${
+                                selectedTab === "beneficios"
+                                  ? "bg-[var(--verde-800)] text-white border-[var(--verde-800)]"
+                                  : "bg-white text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                              }`}
+                            >
+                              Benefícios
+                            </button>
+                          </div>
                         </SheetContent>
                       </Sheet>
                     </TableCell>
