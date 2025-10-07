@@ -1,7 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Eye } from "lucide-react"
+import { toast } from "sonner"
+import { getAuthHeader } from '@/app/api/lib/authHeader'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,37 +19,56 @@ import { Label } from "@/components/ui/label"
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
 
+const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
+
 type Colaborador = {
   matricula: string
   nome: string
-  dataNascimento: string
+  dtNascimento: string
   funcao: string
   genero: string
   cidade: string
 }
 
-const dados: Colaborador[] = [
-  {
-    matricula: "001",
-    nome: "Thaissa",
-    dataNascimento: "12/06/2004",
-    funcao: "Aprendiz",
-    genero: "Feminino",
-    cidade: "SJB",
-  },
-]
-
 export default function PesquisarColaborador() {
+  const [colaboradores, setColaboradores] = useState<Colaborador[]>([])
+  const [loading, setLoading] = useState(false)
   const [selectedTab, setSelectedTab] = useState<"consultas" | "beneficios">(
     "consultas"
   );
   const [selected, setSelected] = useState<Colaborador | null>(null)
+
+  useEffect(() => {
+    buscarColaboradores()
+  }, [])
+
+  async function buscarColaboradores() {
+    setLoading(true)
+    try {
+      const res = await fetch(`${api}/colaborador`, {
+        method: "GET",
+        headers: getAuthHeader()
+      })
+
+      if(!res.ok) {
+        const error = await res.json().catch(() => ({}))
+        throw new Error(error?.message || "Erro ao carregar colaboradores")
+      }
+
+      const data = await res.json()
+      setColaboradores(data.data || [])
+    } catch (error: any) {
+      console.error("Erro ao carregar colaboradores:", error)
+      toast.error(error?.message || "Não foi possível carregar os colaboradores")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <main className="min-h-screen w-screen max-w-none">
@@ -99,11 +120,24 @@ export default function PesquisarColaborador() {
               </TableHeader>
 
               <TableBody>
-                {dados.map((item) => (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center">
+                      Carregando...
+                    </TableCell>
+                    </TableRow>
+                ): colaboradores.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center">
+                    Nenhum colaborador encontrado
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  colaboradores.map((item) => (
                   <TableRow key={item.matricula}>
                     <TableCell>{item.matricula}</TableCell>
                     <TableCell>{item.nome}</TableCell>
-                    <TableCell>{item.dataNascimento}</TableCell>
+                    <TableCell>{new Date(item.dtNascimento).toLocaleDateString()}</TableCell>
                     <TableCell>{item.funcao}</TableCell>
                     <TableCell>{item.genero}</TableCell>
                     <TableCell>{item.cidade}</TableCell>
@@ -159,7 +193,8 @@ export default function PesquisarColaborador() {
                       </Sheet>
                     </TableCell>
                   </TableRow>
-                ))}
+                  ))  
+              )}
               </TableBody>
 
               <TableFooter />

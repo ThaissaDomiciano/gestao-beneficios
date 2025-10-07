@@ -43,7 +43,7 @@ import {
   DropdownMenu
 } from "./ui/dropdown-menu"
 
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useClickAway } from "react-use"
 import { useRouter } from "next/navigation"
 
@@ -67,8 +67,25 @@ function InnerSidebar() {
   const { open, setOpen } = useSidebar()
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const [username, setUsername] = useState<string>("")
 
   useClickAway(ref, () => { if (open) setOpen(false) })
+
+  useEffect(() => {
+    const fetchUsername = () => {
+      const token = localStorage.getItem("gb_token")
+      if (token) {
+        try {
+          const decoded = JSON.parse(atob(token.split(".")[1]))
+          setUsername(decoded.nome || "Usuário")
+        } catch (error) {
+          console.error("Erro ao decodificar token:", error)
+          setUsername("Usuário")
+        }
+      }
+    }
+    fetchUsername()
+  }, [])
 
   const handleOpenOnPointerDownCapture: React.PointerEventHandler<HTMLDivElement> = (e) => {
     if (!open) {
@@ -96,7 +113,7 @@ function InnerSidebar() {
           variant="floating"
           collapsible="icon"
           onPointerDownCapture={handleOpenOnPointerDownCapture}
-           className="group bg-sidebar text-sidebar-foreground
+          className="group bg-sidebar text-sidebar-foreground
                       [--sidebar-width:230px] [--sidebar-width-icon:60px]
                       [--sidebar-border:transparent]           
                       border-0 ring-0 shadow-none outline-none 
@@ -166,7 +183,7 @@ function InnerSidebar() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton className="bg-emerald-700">
-                      <User2 /> Username
+                      <User2 /> {username}
                       <ChevronUp className="ml-auto" />
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>

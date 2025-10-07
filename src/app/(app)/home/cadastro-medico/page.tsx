@@ -13,8 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Stethoscope, Plus } from "lucide-react";
-import { ApiResponse } from '@/types/apiResponse'
-import { get } from 'http'
+import { ApiResponse } from '@/types/apiResponse';
 import { getAuthHeader } from '@/app/api/lib/authHeader'
  
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
