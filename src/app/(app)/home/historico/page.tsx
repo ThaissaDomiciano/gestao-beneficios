@@ -1,13 +1,32 @@
 "use client";
 import { useState } from "react";
 import { ChevronDownIcon, History, Search } from "lucide-react";
-import { Table, TableBody, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { 
+  Table, 
+  TableBody, 
+  TableFooter, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
+import { 
+  Select, 
+  SelectContent, 
+  SelectGroup, 
+  SelectItem, 
+  SelectLabel, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from "@/components/ui/popover";
 
 export default function Historico() {
   const [selectedTab, setSelectedTab] = useState<"agendamento" | "beneficio">(
@@ -19,7 +38,7 @@ export default function Historico() {
   return (
     <main className="min-h-screen w-screen max-w-none">
       <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
-        {/* Header */}
+       
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
@@ -32,7 +51,6 @@ export default function Historico() {
         </div>
 
         <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-8 shadow-sm">
-             {/* Botões de Tabs */}
         <div className="mt-6 flex gap-4">
           <button
             onClick={() => setSelectedTab("agendamento")}
@@ -56,7 +74,6 @@ export default function Historico() {
             Benefício
           </button>
         </div>
-
         <div className="flex items-center gap-2 w-full max-w-4xl">
                         <div className="flex flex-col gap-3">
                             <Label htmlFor="beneficiado" className="px-1">
@@ -123,7 +140,6 @@ export default function Historico() {
                         </div>
                     </div>
 
-             {/* Conteúdo dinâmico */}
         <div className="mt-6 rounded-lg p-6">
           {selectedTab === "agendamento" && (
              <div className="mt-4 w-full overflow-y-hidden sm:overflow-x-auto">
@@ -138,11 +154,8 @@ export default function Historico() {
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
-
               <TableBody>
-              
               </TableBody>  
-
               <TableFooter />
             </Table>
           </div>
@@ -161,21 +174,15 @@ export default function Historico() {
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
-
-              <TableBody>
-              
+              <TableBody>     
               </TableBody>  
-
-              <TableFooter />
+              <TableFooter/>
             </Table>
           </div>
           )}
         </div>
         </div>
-
-       
-       
       </div>
     </main>
-  );
+  )
 }

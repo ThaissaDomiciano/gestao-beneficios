@@ -1,26 +1,49 @@
 'use client'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Label } from "@/components/ui/label";
+import { 
+    Select, 
+    SelectContent, 
+    SelectGroup, 
+    SelectItem, 
+    SelectLabel, 
+    SelectTrigger, 
+    SelectValue 
+} from "@/components/ui/select";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover"
-import { CalendarIcon, Check, ChevronDownIcon, CircleCheckBig, Clock, Search, X } from "lucide-react"
-import { Calendar } from "@/components/ui/calendar"
-import { Label } from "@/components/ui/label"
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/popover";
+import { 
+    CalendarIcon, 
+    Check, 
+    ChevronDownIcon, 
+    CircleCheckBig, 
+    Search, 
+    X 
+} from "lucide-react";
+import { 
+    Dialog, 
+    DialogClose, 
+    DialogContent, 
+    DialogDescription, 
+    DialogFooter, 
+    DialogHeader, 
+    DialogTitle, 
+    DialogTrigger 
+} from "@/components/ui/dialog";
 
 export default function AprovacaoBeneficio() {
     const [open, setOpen] = useState(false)
     const [date, setDate] = useState<Date | undefined>(undefined)
     const [modo, setModo] = useState<"detalhe" | "remarcar">("detalhe")
     const [dataSelecionada, setDataSelecionada] = useState<Date | undefined>(undefined)
-    const [hora, setHora] = useState("")
 
     return (
         <main className="min-h-screen w-screen max-w-none">
@@ -35,7 +58,6 @@ export default function AprovacaoBeneficio() {
                         </h1>
                     </div>
                 </div>
-
                 <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-8 shadow-sm">
                     <span className="mb-4 block font-bold">Filtros</span>
                     <div className="flex items-center gap-2 w-full max-w-4xl">
@@ -101,8 +123,6 @@ export default function AprovacaoBeneficio() {
                                     />
                                 </PopoverContent>
                             </Popover>
-
-
                         </div>
                     </div>
                     <div className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center mt-4">
@@ -115,8 +135,6 @@ export default function AprovacaoBeneficio() {
                                 <p>Kaiky</p>
                             </div>
                         </div>
-
-
                         <div className="flex flex-col items-end gap-2">
                             <p className="text-sm text-gray-800">12/09/2025</p>
                             <Dialog>
@@ -133,7 +151,6 @@ export default function AprovacaoBeneficio() {
                                             Visualize detalhes ou remarque a data e hora.
                                         </DialogDescription>
                                     </DialogHeader>
-
                                     {modo === "detalhe" ? (
                                         <>
                                             <div className="space-y-3">
@@ -146,8 +163,6 @@ export default function AprovacaoBeneficio() {
                                                     <span>Rorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</span>
                                                 </div>
                                             </div>
-
-
                                             <DialogFooter className="mt-6 text-[var(--branco)]">
                                                 <Button
                                                     onClick={() => setModo("remarcar")}
@@ -170,9 +185,7 @@ export default function AprovacaoBeneficio() {
                                         <>
                                             <div className="space-y-2">
                                                 <Label>Data e Hora</Label>
-
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                    {/* Data */}
                                                     <Popover>
                                                         <PopoverTrigger asChild>
                                                             <Button
@@ -182,15 +195,11 @@ export default function AprovacaoBeneficio() {
                                                                     !dataSelecionada && "text-muted-foreground"
                                                                 )}
                                                             >
-
                                                             </Button>
                                                         </PopoverTrigger>
-
                                                     </Popover>
-
                                                 </div>
                                             </div>
-
                                             <DialogFooter className="mt-6 text-[var(--branco)]">
                                                 <Button
                                                     variant="outline"

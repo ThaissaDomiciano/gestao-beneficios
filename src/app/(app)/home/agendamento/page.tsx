@@ -1,7 +1,8 @@
 'use client'
 
-import { Calendar } from "@/components/ui/calendar"
-import { CalendarDays } from "lucide-react"
+import * as React from "react";
+import { CalendarDays } from "lucide-react";
+import { CalendarIcon, X, Check, Clock } from "lucide-react";
 import {
     Dialog,
     DialogClose,
@@ -11,17 +12,21 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "@/components/ui/dialog"
-import * as React from "react"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/dialog";
+import { 
+    Popover, 
+    PopoverTrigger, 
+    PopoverContent 
+} from "@/components/ui/popover";
 
-import { CalendarIcon, X, Check, Clock } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+
 
 export default function Agendamento() {
     const [date, setDate] = React.useState<Date | undefined>(new Date())
@@ -127,7 +132,7 @@ return (
                                                 <Label>Data e Hora</Label>
 
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                    {/* Data */}
+                               
                                                     <Popover>
                                                         <PopoverTrigger asChild>
                                                             <Button
@@ -154,7 +159,6 @@ return (
                                                         </PopoverContent>
                                                     </Popover>
 
-                                                            {/* Hora */}
                                                     <div className="flex items-center gap-2">
                                                         <Clock className="h-4 w-4 opacity-60" />
                                                         <Input
@@ -193,6 +197,5 @@ return (
     </div>
 </main >
     )
-
 }
 

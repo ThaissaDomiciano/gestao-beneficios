@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Search, Eye } from "lucide-react"
-import { toast } from "sonner"
-import { getAuthHeader } from '@/app/api/lib/authHeader'
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect, FormEvent } from "react";
+import { toast } from "sonner";
+import { getAuthHeader } from '@/app/api/lib/authHeader';
+import { Search, Eye } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -14,15 +15,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/table";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet"
+} from "@/components/ui/sheet";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -38,6 +38,8 @@ type Colaborador = {
 export default function PesquisarColaborador() {
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([])
   const [loading, setLoading] = useState(false)
+  const [search, setSearch] = useState("")
+  const [filteredColaboradores, setFilteredColaboradores] = useState<Colaborador[]>([])
   const [selectedTab, setSelectedTab] = useState<"consultas" | "beneficios">(
     "consultas"
   );
@@ -46,6 +48,20 @@ export default function PesquisarColaborador() {
   useEffect(() => {
     buscarColaboradores()
   }, [])
+
+  useEffect(() => {
+    if(!search.trim()) {
+      setFilteredColaboradores(colaboradores)
+      return
+    }
+
+    const filtered = colaboradores.filter(
+      (colab) =>
+        colab.nome.toLowerCase().includes(search.toLowerCase()) ||
+        colab.matricula.toLowerCase().includes(search.toLowerCase())
+    ) 
+    setFilteredColaboradores(filtered)
+  }, [search, colaboradores])
 
   async function buscarColaboradores() {
     setLoading(true)
@@ -70,6 +86,10 @@ export default function PesquisarColaborador() {
     }
   }
 
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault()
+  }
+
   return (
     <main className="min-h-screen w-screen max-w-none">
       <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
@@ -83,7 +103,6 @@ export default function PesquisarColaborador() {
             </h1>
           </div>
         </div>
-
         <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-12 shadow-sm overflow-hidden">
           <div className="flex flex-col gap-3">
             <Label htmlFor="colaborador" className="px-1">
@@ -95,6 +114,8 @@ export default function PesquisarColaborador() {
                 type="text"
                 placeholder="Pesquise o colaborador"
                 className="rounded-r-none"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
               <Button
                 type="submit"
@@ -126,14 +147,14 @@ export default function PesquisarColaborador() {
                       Carregando...
                     </TableCell>
                     </TableRow>
-                ): colaboradores.length === 0 ? (
+                ): filteredColaboradores.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center">
                     Nenhum colaborador encontrado
                     </TableCell>
                   </TableRow>
                 ) : (
-                  colaboradores.map((item) => (
+                  filteredColaboradores.map((item) => (
                   <TableRow key={item.matricula}>
                     <TableCell>{item.matricula}</TableCell>
                     <TableCell>{item.nome}</TableCell>
@@ -196,7 +217,6 @@ export default function PesquisarColaborador() {
                   ))  
               )}
               </TableBody>
-
               <TableFooter />
             </Table>
           </div>
