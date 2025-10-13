@@ -1,6 +1,9 @@
 'use client'
 
 import * as React from "react";
+import { useEffect, useState } from "react";
+import { getAuthHeader } from '@/app/api/lib/authHeader';
+import { toast } from "sonner";
 import { CalendarDays } from "lucide-react";
 import { CalendarIcon, X, Check, Clock } from "lucide-react";
 import {
@@ -27,12 +30,88 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
+const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
+
+type Dependente = {
+    id: string
+    nome: string
+}
+
+type Colaborador = {
+    id: string
+    nome: string
+    matricula: string
+    dtNascimento: string
+    funcao: string
+    genero: string
+    cidade: string
+    dependentes: Dependente[]
+}
+
+type Especialidade = {
+    id: string
+    nome: string
+}
+
+type Disponibilidade = {
+    id: string
+    dia: number
+}
+
+type Medico = {
+    id: string
+    nome: string
+    email: string
+    especialidade: Especialidade
+    disponibilidade: Disponibilidade[]
+    horaEntrada: string
+    horaPausa: string
+    horaVolta: string
+    horaSaida: string
+}
+
+type Agendamento = {
+    idAgendamento: string
+    colaborador: Colaborador
+    dependente: Dependente | null
+    medico: Medico
+    horario: string
+    status: "AGENDADO" | "CANCELADO" | "REALIZADO"
+}
+
 
 export default function Agendamento() {
-    const [date, setDate] = React.useState<Date | undefined>(new Date())
+    const [date, setDate] = React.useState<Date | undefined>(new Date());
     const [modo, setModo] = React.useState<"detalhe" | "remarcar">("detalhe");
-    const [dataSelecionada, setDataSelecionada] = React.useState<Date | undefined>(new Date());
-    const [hora, setHora] = React.useState("13:00");
+    const [dataSelecionada, setDataSelecionada] = useState<Date | undefined>(new Date());
+    const [hora, setHora] = useState("13:00");
+    const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
+    const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<Agendamento | null>(null)
+    const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        buscarAgendamentos()
+    }, [])
+
+    async function buscarAgendamentos() {
+        setLoading(true)
+        try {
+            const res = await fetch(`${api}/agendamento`, {
+              headers: getAuthHeader()  
+            })
+
+            if (!res.ok) {
+                throw new Error("Erro ao carregar agendamentos")
+            }
+            const data = await res.json()
+            setAgendamentos(data.data || [])
+        } catch(error) {
+            console.error(error)
+            toast.error("Não foi possível carregar os agendamentos")
+        } finally {
+            setLoading(false)
+        }
+    }
 
 return (
     <main className="min-h-screen w-screen max-w-none">
@@ -56,23 +135,36 @@ return (
                             captionLayout="dropdown"
                         />
                     </div>
-                    <div>
-                        <div className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center">
-                            <div className="flex flex-col gap-1">
-                                <div className="flex gap-2">
-                                    <span className="font-semibold">Paciente</span>
-                                    <p>Luis Felipe</p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <span className="font-semibold">Médico</span>
-                                    <p>Alefe Augusto</p>
-                                </div>
-                            </div>
+                    <div className="space-y-4">
+                            {loading ? (
+                                <div>Carregando agendamentos...</div>
+                            ) : agendamentos.length === 0 ? (
+                                <div>Nenhum agendamento encontrado</div>
+                            ) : (
+                                agendamentos.map((agendamento) => (
+                                    <div 
+                                        key={agendamento.idAgendamento}
+                                        className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center"
+                                    >
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex gap-2">
+                                                <span className="font-semibold">Paciente:</span>
+                                                <p>{agendamento.dependente ? agendamento.dependente.nome : agendamento.colaborador.nome}</p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <span className="font-semibold">Médico:</span>
+                                                <p>{agendamento.medico.nome}</p>
+                                            </div>
+                                        </div>
 
-                            <div className="flex flex-col items-end gap-2">
-                                <p className="text-sm text-gray-800">12/09/2025&nbsp;&nbsp;13:00</p>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <p className="text-sm text-gray-800">
+                                                {format(new Date(agendamento.horario), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                                            </p>
                                 <Dialog>
-                                    <DialogTrigger asChild className="bg-[var(--verde-900)] text-[var(--branco)]">
+                                    <DialogTrigger asChild className="bg-[var(--verde-900)] text-[var(--branco)]"
+                                    onClick={() => setAgendamentoSelecionado(agendamento)}
+                                    >
                                         <Button variant="outline">Detalhar</Button>
                                     </DialogTrigger>
 
@@ -86,24 +178,29 @@ return (
                                             </DialogDescription>
                                         </DialogHeader>
 
-                                        {modo === "detalhe" ? (
+                                        {modo === "detalhe" && agendamentoSelecionado ? (
                                             <>
                                             <div className="space-y-3">
                                                 <div className="flex items-baseline gap-2">
                                                     <span className="font-semibold">Paciente</span>
-                                                    <span>Luis Felipe</span>
+                                                    <span>
+                                                        {agendamentoSelecionado.dependente
+                                                        ? agendamentoSelecionado.dependente.nome
+                                                        : agendamentoSelecionado.colaborador.nome
+                                                        }
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-baseline gap-2">
                                                     <span className="font-semibold">Médico</span>
-                                                    <span>Alefe Augusto</span>
+                                                    <span>{agendamentoSelecionado.medico.nome}</span>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-6">
                                                     <div>
                                                         <span className="font-semibold">Data </span>
-                                                        {format(new Date(2025, 8, 12), "dd/MM/yyyy", { locale: ptBR })}
+                                                        {format(new Date(agendamentoSelecionado.horario), "dd/MM/yyyy", { locale: ptBR })}
                                                     </div>
                                                     <div>
-                                                        <span className="font-semibold">Horário </span>13:00
+                                                        <span className="font-semibold">Horário </span> {format(new Date(agendamentoSelecionado.horario), "HH:mm")}
                                                     </div>
                                                 </div>
                                             </div>
@@ -188,14 +285,15 @@ return (
                                         </>
                                     )}
                                 </DialogContent>
-                            </Dialog>
+                                            </Dialog>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</main >
+        </main>
     )
 }
-
