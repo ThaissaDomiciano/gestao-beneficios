@@ -63,6 +63,7 @@ export default function AprovacaoBeneficio() {
   const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
   const BENEFICIO_ALL = "ALL";
   const [beneficioSelecionado, setBeneficioSelecionado] = useState<string>(BENEFICIO_ALL);
+  const [isAproving, setIsAproving] = useState(false);
 
   useEffect(() => { 
     buscarSolicitacoes(); 
@@ -73,7 +74,7 @@ export default function AprovacaoBeneficio() {
     (s ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
   const solicitacoesFiltradas = useMemo(() => {
-    let base = [...solicitacoes];
+  let base = solicitacoes.filter(s => s.status === "PENDENTE");
 
     const q = norm(pesquisarBeneficiado.trim());
     if (q) {
@@ -172,7 +173,9 @@ export default function AprovacaoBeneficio() {
   }
 
   async function aprovarSolicitacao() {
-    if (!solicitacaoSelecionada) return;
+    if (!solicitacaoSelecionada || isAproving) return;
+
+    setIsAproving(true);
 
     const toNumber = (v: string) =>
       Number(String(v).replace(/\./g, "").replace(",", ".")) || 0;
@@ -221,8 +224,10 @@ export default function AprovacaoBeneficio() {
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message || "Não foi possível aprovar a solicitação");
+    } finally {
+      setIsAproving(false);
     }
-  }
+}
 
   return (
     <main className="min-h-screen w-screen max-w-none">
@@ -445,13 +450,23 @@ export default function AprovacaoBeneficio() {
                                 Cancelar
                               </Button>
 
-                              <Button
-                                className="gap-2 text-[var(--branco)] bg-[var(--verde-900)]"
-                                onClick={aprovarSolicitacao}
-                              >
-                                <Check size={18} />
-                                Confirmar
-                              </Button>
+                             <Button
+                              className="gap-2 text-[var(--branco)] bg-[var(--verde-900)]"
+                              onClick={aprovarSolicitacao}
+                              disabled={isAproving}
+                            >
+                              {isAproving ? (
+                                <>
+                                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                  Aprovando...
+                                </>
+                              ) : (
+                                <>
+                                  <Check size={18} />
+                                  Confirmar
+                                </>
+                              )}
+                            </Button>
                             </DialogFooter>
                           </>
                         )}
