@@ -40,7 +40,7 @@ type Solicitacao = {
   status: "PENDENTE" | "APROVADO" | "REJEITADO";
 };
 type Documento = {
-  arquivoUrl: string;
+  nomeArquivoUnico: string;
   nomeArquivoOriginal: string;
   tamanho: number;
   dataUpload: string;
@@ -70,43 +70,35 @@ export default function AprovacaoBeneficio() {
   }, []);
 
   const norm = (s?: string) =>
-  (s ?? "")
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase();
-
-const solicitacoesFiltradas = useMemo(() => {
-  let base = [...solicitacoes];
-
-  const norm = (s?: string) =>
     (s ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
-  const q = norm(pesquisarBeneficiado.trim());
-  if (q) {
-    base = base.filter((s) => {
-      const beneficiadoNome = s.dependente ? s.dependente.nome : s.colaborador.nome;
-      return norm(beneficiadoNome).includes(q);
-    });
-  }
+  const solicitacoesFiltradas = useMemo(() => {
+    let base = [...solicitacoes];
 
-  if (beneficioSelecionado !== "ALL") {
-    const alvo = norm(beneficioSelecionado);
-    base = base.filter((s) => norm(s.beneficio.nome).includes(alvo));
-  }
+    const q = norm(pesquisarBeneficiado.trim());
+    if (q) {
+      base = base.filter((s) => {
+        const beneficiadoNome = s.dependente ? s.dependente.nome : s.colaborador.nome;
+        return norm(beneficiadoNome).includes(q);
+      });
+    }
 
-  if (date) {
-    const start = startOfDay(date);
-    const end = endOfDay(date);
-    base = base.filter((s) => {
-      const d = parseISO(s.dataSolicitacao); 
-      return isWithinInterval(d, { start, end });
-    });
-  }
+    if (beneficioSelecionado !== BENEFICIO_ALL) {
+      const alvo = norm(beneficioSelecionado);
+      base = base.filter((s) => norm(s.beneficio.nome).includes(alvo));
+    }
 
-  return base;
-}, [solicitacoes, pesquisarBeneficiado, beneficioSelecionado, date]);
+    if (date) {
+      const start = startOfDay(date);
+      const end = endOfDay(date);
+      base = base.filter((s) => {
+        const d = parseISO(s.dataSolicitacao);
+        return isWithinInterval(d, { start, end });
+      });
+    }
 
-
+    return base;
+  }, [solicitacoes, pesquisarBeneficiado, beneficioSelecionado, date]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -143,9 +135,7 @@ const solicitacoesFiltradas = useMemo(() => {
 
   async function buscarBeneficios() {
     try {
-      const res = await fetch(`${api}/beneficio`, {
-        headers: getAuthHeader()
-      });
+      const res = await fetch(`${api}/beneficio`, { headers: getAuthHeader() });
       if(!res.ok) throw new Error("Erro ao carregar benefício");
       const data = await res.json();
       setBeneficios(data.data || []);
@@ -155,19 +145,21 @@ const solicitacoesFiltradas = useMemo(() => {
     }
   }
 
-  async function abrirDocumento(nomeArquivo: string) {
+  async function abrirDocumento(nomeArquivoUnico: string) {
     try {
-      const res = await fetch(`${api}/documentos/${nomeArquivo}/url-acesso`, {
-        headers: getAuthHeader()
-      });
+      const res = await fetch(
+        `${api}/documentos/${encodeURIComponent(nomeArquivoUnico)}/url-acesso`,
+        { headers: getAuthHeader() }
+      );
       if (!res.ok) throw new Error("Erro ao gerar URL do documento");
       const data = await res.json();
+      if (!data?.success) throw new Error(data?.message || "Documento informado não foi encontrado!");
       const url: string = data.data ?? data.url;
       if (!url) throw new Error("Resposta sem URL");
-      window.open(url, "_blank");
-    } catch (error) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } catch (error: any) {
       console.error(error);
-      toast.error("Não foi possível abrir o documento");
+      toast.error(error?.message || "Não foi possível abrir o documento");
     }
   }
 
@@ -208,7 +200,7 @@ const solicitacoesFiltradas = useMemo(() => {
         throw new Error(txt || "Erro ao aprovar solicitação");
       }
 
-      const data = await res.json();
+      await res.json();
 
       setSolicitacoes((prev) =>
         prev.map((s) =>
@@ -226,9 +218,9 @@ const solicitacoesFiltradas = useMemo(() => {
       toast.success("Solicitação aprovada com sucesso!");
       setModo("detalhe");
       await buscarDocumentos(solicitacaoSelecionada.id, solicitacaoSelecionada.colaborador.id);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      toast.error("Não foi possível aprovar a solicitação");
+      toast.error(e?.message || "Não foi possível aprovar a solicitação");
     }
   }
 
@@ -376,9 +368,19 @@ const solicitacoesFiltradas = useMemo(() => {
                                 <span className="font-semibold block mb-2">Documentos:</span>
                                 <div className="space-y-2">
                                   {documentos.map((doc) => (
-                                    <div key={doc.arquivoUrl} className="flex items-center justify-between p-2 border rounded-md bg-[var(--branco)]">
-                                      <span className="truncate flex-1" title={doc.nomeArquivoOriginal}>{doc.nomeArquivoOriginal}</span>
-                                      <Button variant="ghost" size="sm" onClick={() => abrirDocumento(doc.arquivoUrl)} className="ml-2">
+                                    <div
+                                      key={`${doc.nomeArquivoUnico}-${doc.dataUpload}`}
+                                      className="flex items-center justify-between p-2 border rounded-md bg-[var(--branco)]"
+                                    >
+                                      <span className="truncate flex-1" title={doc.nomeArquivoOriginal}>
+                                        {doc.nomeArquivoOriginal}
+                                      </span>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => abrirDocumento(doc.nomeArquivoUnico)}
+                                        className="ml-2"
+                                      >
                                         <Eye className="h-4 w-4" />
                                       </Button>
                                     </div>
