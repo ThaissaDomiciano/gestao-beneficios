@@ -4,24 +4,18 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { getAuthHeader } from '@/app/api/lib/authHeader';
 import { toast } from "sonner";
-import { CalendarDays } from "lucide-react";
-import { CalendarIcon, X, Check, Clock } from "lucide-react";
+import { CalendarDays, CalendarIcon, X, Check, Clock } from "lucide-react";
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { 
-    Popover, 
-    PopoverTrigger, 
-    PopoverContent 
-} from "@/components/ui/popover";
-
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -32,268 +26,236 @@ import { cn } from "@/lib/utils";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
-type Dependente = {
-    id: string
-    nome: string
-}
-
+type Dependente = { id: string; nome: string };
 type Colaborador = {
-    id: string
-    nome: string
-    matricula: string
-    dtNascimento: string
-    funcao: string
-    genero: string
-    cidade: string
-    dependentes: Dependente[]
-}
-
-type Especialidade = {
-    id: string
-    nome: string
-}
-
-type Disponibilidade = {
-    id: string
-    dia: number
-}
-
+  id: string; nome: string; matricula: string; dtNascimento: string;
+  funcao: string; genero: string; cidade: string; dependentes: Dependente[];
+};
+type Especialidade = { id: string; nome: string };
+type Disponibilidade = { id: string; dia: number };
 type Medico = {
-    id: string
-    nome: string
-    email: string
-    especialidade: Especialidade
-    disponibilidade: Disponibilidade[]
-    horaEntrada: string
-    horaPausa: string
-    horaVolta: string
-    horaSaida: string
-}
-
+  id: string; nome: string; email: string; especialidade: Especialidade;
+  disponibilidade: Disponibilidade[]; horaEntrada: string; horaPausa: string;
+  horaVolta: string; horaSaida: string;
+};
 type Agendamento = {
-    idAgendamento: string
-    colaborador: Colaborador
-    dependente: Dependente | null
-    medico: Medico
-    horario: string
-    status: "AGENDADO" | "CANCELADO" | "REALIZADO"
-}
-
+  idAgendamento: string;
+  colaborador: Colaborador;
+  dependente: Dependente | null;
+  medico: Medico;
+  horario: string;
+  status: "AGENDADO" | "CANCELADO" | "REALIZADO";
+};
 
 export default function Agendamento() {
-    const [date, setDate] = React.useState<Date | undefined>(new Date());
-    const [modo, setModo] = React.useState<"detalhe" | "remarcar">("detalhe");
-    const [dataSelecionada, setDataSelecionada] = useState<Date | undefined>(new Date());
-    const [hora, setHora] = useState("13:00");
-    const [agendamentos, setAgendamentos] = useState<Agendamento[]>([])
-    const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<Agendamento | null>(null)
-    const [loading, setLoading] = useState(false)
+  const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [modo, setModo] = React.useState<"detalhe" | "remarcar">("detalhe");
+  const [dataSelecionada, setDataSelecionada] = useState<Date | undefined>(new Date());
+  const [hora, setHora] = useState("13:00");
+  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
+  const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<Agendamento | null>(null);
+  const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        buscarAgendamentos()
-    }, [])
+  useEffect(() => { buscarAgendamentos(); }, []);
 
-    async function buscarAgendamentos() {
-        setLoading(true)
-        try {
-            const res = await fetch(`${api}/agendamento`, {
-              headers: getAuthHeader()  
-            })
-
-            if (!res.ok) {
-                throw new Error("Erro ao carregar agendamentos")
-            }
-            const data = await res.json()
-            setAgendamentos(data.data || [])
-        } catch(error) {
-            console.error(error)
-            toast.error("Não foi possível carregar os agendamentos")
-        } finally {
-            setLoading(false)
-        }
+  async function buscarAgendamentos() {
+    setLoading(true);
+    try {
+      const res = await fetch(`${api}/agendamento`, { headers: getAuthHeader() });
+      if (!res.ok) throw new Error("Erro ao carregar agendamentos");
+      const data = await res.json();
+      setAgendamentos(data.data || []);
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível carregar os agendamentos");
+    } finally {
+      setLoading(false);
     }
+  }
 
-return (
+  return (
     <main className="min-h-screen w-screen max-w-none">
-        <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
-            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
-                <div className="flex items-center gap-3">
-                    <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
-                        <CalendarDays></CalendarDays>
-                    </div>
-                    <h1 className="text-3xl font-semibold text-[var(--cinza-700)]">Agendamento</h1>
-                </div>
+      <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
+              <CalendarDays />
             </div>
-            <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-12 shadow-sm">
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <Calendar
-                            mode="single"
-                            selected={date}
-                            onSelect={setDate}
-                            className="rounded-md border shadow-sm"
-                            captionLayout="dropdown"
-                        />
-                    </div>
-                    <div className="space-y-4">
-                            {loading ? (
-                                <div>Carregando agendamentos...</div>
-                            ) : agendamentos.length === 0 ? (
-                                <div>Nenhum agendamento encontrado</div>
-                            ) : (
-                                agendamentos.map((agendamento) => (
-                                    <div 
-                                        key={agendamento.idAgendamento}
-                                        className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center"
-                                    >
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex gap-2">
-                                                <span className="font-semibold">Paciente:</span>
-                                                <p>{agendamento.dependente ? agendamento.dependente.nome : agendamento.colaborador.nome}</p>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <span className="font-semibold">Médico:</span>
-                                                <p>{agendamento.medico.nome}</p>
-                                            </div>
-                                        </div>
+            <h1 className="text-3xl font-semibold text-[var(--cinza-700)]">Agendamento</h1>
+          </div>
+        </div>
 
-                                        <div className="flex flex-col items-end gap-2">
-                                            <p className="text-sm text-gray-800">
-                                                {format(new Date(agendamento.horario), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                                            </p>
-                                <Dialog>
-                                    <DialogTrigger asChild className="bg-[var(--verde-900)] text-[var(--branco)]"
-                                    onClick={() => setAgendamentoSelecionado(agendamento)}
-                                    >
-                                        <Button variant="outline">Detalhar</Button>
-                                    </DialogTrigger>
+        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-12 shadow-sm">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="rounded-md border shadow-sm"
+                captionLayout="dropdown"
+              />
+            </div>
 
-                                    <DialogContent className="sm:max-w-[520px] bg-[var(--cinza-200)]">
-                                        <DialogHeader>
-                                            <DialogTitle className="text-2xl font-bold text-emerald-700">
-                                                Detalhe do agendamento
-                                            </DialogTitle>
-                                            <DialogDescription className="sr-only">
-                                                Visualize detalhes ou remarque a data e hora.
-                                            </DialogDescription>
-                                        </DialogHeader>
-
-                                        {modo === "detalhe" && agendamentoSelecionado ? (
-                                            <>
-                                            <div className="space-y-3">
-                                                <div className="flex items-baseline gap-2">
-                                                    <span className="font-semibold">Paciente</span>
-                                                    <span>
-                                                        {agendamentoSelecionado.dependente
-                                                        ? agendamentoSelecionado.dependente.nome
-                                                        : agendamentoSelecionado.colaborador.nome
-                                                        }
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-baseline gap-2">
-                                                    <span className="font-semibold">Médico</span>
-                                                    <span>{agendamentoSelecionado.medico.nome}</span>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-6">
-                                                    <div>
-                                                        <span className="font-semibold">Data </span>
-                                                        {format(new Date(agendamentoSelecionado.horario), "dd/MM/yyyy", { locale: ptBR })}
-                                                    </div>
-                                                    <div>
-                                                        <span className="font-semibold">Horário </span> {format(new Date(agendamentoSelecionado.horario), "HH:mm")}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <DialogFooter className="mt-6 text-[var(--branco)]">
-                                                <Button
-                                                    onClick={() => setModo("remarcar")} 
-                                                    className="gap-2 bg-[var(--verde-900)]"
-                                                    variant="secondary"
-                                                >
-                                                    <CalendarIcon size={18} className="text-[var(--branco)]" />
-                                                    Remarcar
-                                                </Button>
-
-                                                <DialogClose asChild className="text-[var(--branco)]">
-                                                    <Button variant="outline" className="gap-2 bg-[var(--verde-900)]">
-                                                        <X size={18} className="text-[var(--branco)]" />
-                                                        Cancelar
-                                                    </Button>
-                                                </DialogClose>
-                                            </DialogFooter>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="space-y-2">
-                                                <Label>Data e Hora</Label>
-
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                               
-                                                    <Popover>
-                                                        <PopoverTrigger asChild>
-                                                            <Button
-                                                                variant="outline"
-                                                                className={cn(
-                                                                        "justify-start text-left font-normal",
-                                                                        !dataSelecionada && "text-muted-foreground"
-                                                                )}
-                                                            >
-                                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                                {dataSelecionada
-                                                                    ? format(dataSelecionada, "dd/MM/yyyy", { locale: ptBR })
-                                                                    : "DD/MM/YY"}
-                                                            </Button>
-                                                        </PopoverTrigger>
-                                                        <PopoverContent className="w-auto p-0" align="start">
-                                                            <Calendar
-                                                                mode="single"
-                                                                selected={dataSelecionada}
-                                                                onSelect={setDataSelecionada}
-                                                                initialFocus
-                                                                locale={ptBR}
-                                                            />
-                                                        </PopoverContent>
-                                                    </Popover>
-
-                                                    <div className="flex items-center gap-2">
-                                                        <Clock className="h-4 w-4 opacity-60" />
-                                                        <Input
-                                                            type="time"
-                                                            value={hora}
-                                                            onChange={(e) => setHora(e.target.value)}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <DialogFooter className="mt-6 text-[var(--branco)]">
-                                                <Button
-                                                    variant="outline"
-                                                    className="gap-2 bg-[var(--verde-900)]"
-                                                    onClick={() => setModo("detalhe")}
-                                                >
-                                                    <X size={18} />
-                                                    Cancelar
-                                                </Button>
-
-                                                <Button className="gap-2 text-[var(--branco)] bg-[var(--verde-900)]">
-                                                    <Check size={18} />
-                                                    Confirmar
-                                                </Button>
-                                            </DialogFooter>
-                                        </>
-                                    )}
-                                </DialogContent>
-                                            </Dialog>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
+            <div className="space-y-4">
+              {loading ? (
+                <div>Carregando agendamentos...</div>
+              ) : agendamentos.length === 0 ? (
+                <div>Nenhum agendamento encontrado</div>
+              ) : (
+                <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3">
+                  {agendamentos.map((agendamento) => (
+                    <div
+                      key={agendamento.idAgendamento}
+                      className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div className="flex gap-2">
+                          <span className="font-semibold">Paciente:</span>
+                          <p>{agendamento.dependente ? agendamento.dependente.nome : agendamento.colaborador.nome}</p>
                         </div>
+                        <div className="flex gap-2">
+                          <span className="font-semibold">Médico:</span>
+                          <p>{agendamento.medico.nome}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-2">
+                        <p className="text-sm text-gray-800">
+                          {format(new Date(agendamento.horario), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        </p>
+                        <Dialog>
+                          <DialogTrigger
+                            asChild
+                            className="bg-[var(--verde-900)] text-[var(--branco)]"
+                            onClick={() => setAgendamentoSelecionado(agendamento)}
+                          >
+                            <Button variant="outline">Detalhar</Button>
+                          </DialogTrigger>
+
+                          <DialogContent className="sm:max-w-[520px] bg-[var(--cinza-200)]">
+                            <DialogHeader>
+                              <DialogTitle className="text-2xl font-bold text-emerald-700">
+                                Detalhe do agendamento
+                              </DialogTitle>
+                              <DialogDescription className="sr-only">
+                                Visualize detalhes ou remarque a data e hora.
+                              </DialogDescription>
+                            </DialogHeader>
+
+                            {modo === "detalhe" && agendamentoSelecionado ? (
+                              <>
+                                <div className="space-y-3">
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="font-semibold">Paciente</span>
+                                    <span>
+                                      {agendamentoSelecionado.dependente
+                                        ? agendamentoSelecionado.dependente.nome
+                                        : agendamentoSelecionado.colaborador.nome}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="font-semibold">Médico</span>
+                                    <span>{agendamentoSelecionado.medico.nome}</span>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                      <span className="font-semibold">Data </span>
+                                      {format(new Date(agendamentoSelecionado.horario), "dd/MM/yyyy", { locale: ptBR })}
+                                    </div>
+                                    <div>
+                                      <span className="font-semibold">Horário </span>
+                                      {format(new Date(agendamentoSelecionado.horario), "HH:mm")}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <DialogFooter className="mt-6 text-[var(--branco)]">
+                                  <Button
+                                    onClick={() => setModo("remarcar")}
+                                    className="gap-2 bg-[var(--verde-900)]"
+                                    variant="secondary"
+                                  >
+                                    <CalendarIcon size={18} className="text-[var(--branco)]" />
+                                    Remarcar
+                                  </Button>
+                                  <DialogClose asChild className="text-[var(--branco)]">
+                                    <Button variant="outline" className="gap-2 bg-[var(--verde-900)]">
+                                      <X size={18} className="text-[var(--branco)]" />
+                                      Cancelar
+                                    </Button>
+                                  </DialogClose>
+                                </DialogFooter>
+                              </>
+                            ) : (
+                              <>
+                                <div className="space-y-2">
+                                  <Label>Data e Hora</Label>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="outline"
+                                          className={cn(
+                                            "justify-start text-left font-normal",
+                                            !dataSelecionada && "text-muted-foreground"
+                                          )}
+                                        >
+                                          <CalendarIcon className="mr-2 h-4 w-4" />
+                                          {dataSelecionada
+                                            ? format(dataSelecionada, "dd/MM/yyyy", { locale: ptBR })
+                                            : "DD/MM/YY"}
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                          mode="single"
+                                          selected={dataSelecionada}
+                                          onSelect={setDataSelecionada}
+                                          initialFocus
+                                          locale={ptBR}
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+
+                                    <div className="flex items-center gap-2">
+                                      <Clock className="h-4 w-4 opacity-60" />
+                                      <Input
+                                        type="time"
+                                        value={hora}
+                                        onChange={(e) => setHora(e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <DialogFooter className="mt-6 text-[var(--branco)]">
+                                  <Button
+                                    variant="outline"
+                                    className="gap-2 bg-[var(--verde-900)]"
+                                    onClick={() => setModo("detalhe")}
+                                  >
+                                    <X size={18} />
+                                    Cancelar
+                                  </Button>
+                                  <Button className="gap-2 text-[var(--branco)] bg-[var(--verde-900)]">
+                                    <Check size={18} />
+                                    Confirmar
+                                  </Button>
+                                </DialogFooter>
+                              </>
+                            )}
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                     </div>
+                  ))}
                 </div>
+              )}
             </div>
-        </main>
-    )
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 }

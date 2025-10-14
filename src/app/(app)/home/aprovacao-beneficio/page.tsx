@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { format, startOfDay, endOfDay, isWithinInterval, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { getAuthHeader } from '@/app/api/lib/authHeader';
@@ -57,14 +56,62 @@ export default function AprovacaoBeneficio() {
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [modo, setModo] = useState<"detalhe" | "aprovar">("detalhe");
-  const [dataSelecionada, setDataSelecionada] = useState<Date | undefined>(undefined);
   const [documentos, setDocumentos] = useState<Documento[]>([]);
-  // estados do formulário de aprovação
   const [valorTotal, setValorTotal] = useState<string>("");
   const [desconto, setDesconto] = useState<string>("");
+  const [pesquisarBeneficiado, setPesquisarBeneficiado] = useState("");
+  const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
+  const BENEFICIO_ALL = "ALL";
+  const [beneficioSelecionado, setBeneficioSelecionado] = useState<string>(BENEFICIO_ALL);
 
-  useEffect(() => { buscarSolicitacoes(); }, []);
+  useEffect(() => { 
+    buscarSolicitacoes(); 
+    buscarBeneficios();
+  }, []);
 
+  const norm = (s?: string) =>
+  (s ?? "")
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+
+const solicitacoesFiltradas = useMemo(() => {
+  let base = [...solicitacoes];
+
+  const norm = (s?: string) =>
+    (s ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+  const q = norm(pesquisarBeneficiado.trim());
+  if (q) {
+    base = base.filter((s) => {
+      const beneficiadoNome = s.dependente ? s.dependente.nome : s.colaborador.nome;
+      return norm(beneficiadoNome).includes(q);
+    });
+  }
+
+  if (beneficioSelecionado !== "ALL") {
+    const alvo = norm(beneficioSelecionado);
+    base = base.filter((s) => norm(s.beneficio.nome).includes(alvo));
+  }
+
+  if (date) {
+    const start = startOfDay(date);
+    const end = endOfDay(date);
+    base = base.filter((s) => {
+      const d = parseISO(s.dataSolicitacao); 
+      return isWithinInterval(d, { start, end });
+    });
+  }
+
+  return base;
+}, [solicitacoes, pesquisarBeneficiado, beneficioSelecionado, date]);
+
+
+
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+  };
+  
   async function buscarSolicitacoes() {
     setLoading(true);
     try {
@@ -94,6 +141,20 @@ export default function AprovacaoBeneficio() {
     }
   }
 
+  async function buscarBeneficios() {
+    try {
+      const res = await fetch(`${api}/beneficio`, {
+        headers: getAuthHeader()
+      });
+      if(!res.ok) throw new Error("Erro ao carregar benefício");
+      const data = await res.json();
+      setBeneficios(data.data || []);
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível carregar os benefícios");
+    }
+  }
+
   async function abrirDocumento(nomeArquivo: string) {
     try {
       const res = await fetch(`${api}/documentos/${nomeArquivo}/url-acesso`, {
@@ -101,7 +162,7 @@ export default function AprovacaoBeneficio() {
       });
       if (!res.ok) throw new Error("Erro ao gerar URL do documento");
       const data = await res.json();
-      const url: string = data.data ?? data.url; // API retorna em `data`
+      const url: string = data.data ?? data.url;
       if (!url) throw new Error("Resposta sem URL");
       window.open(url, "_blank");
     } catch (error) {
@@ -113,7 +174,6 @@ export default function AprovacaoBeneficio() {
   function abrirModalDetalhe(s: Solicitacao) {
     setSolicitacaoSelecionada(s);
     setModo("detalhe");
-    // zera form de aprovação e carrega docs atuais
     setValorTotal((s.valorTotal ?? 0).toString());
     setDesconto((s.desconto ?? 0).toString());
     buscarDocumentos(s.id, s.colaborador.id);
@@ -122,13 +182,10 @@ export default function AprovacaoBeneficio() {
   async function aprovarSolicitacao() {
     if (!solicitacaoSelecionada) return;
 
-    // parse simples número (ponto ou vírgula)
     const toNumber = (v: string) =>
       Number(String(v).replace(/\./g, "").replace(",", ".")) || 0;
 
     const payload = {
-      // se o backend aceitar somente os campos alteráveis, envie só eles;
-      // mantendo campos essenciais conforme teu exemplo:
       valorTotal: toNumber(valorTotal),
       desconto: toNumber(desconto),
       descricao: solicitacaoSelecionada.descricao,
@@ -153,7 +210,6 @@ export default function AprovacaoBeneficio() {
 
       const data = await res.json();
 
-      // atualiza a lista local (status e valores)
       setSolicitacoes((prev) =>
         prev.map((s) =>
           s.id === solicitacaoSelecionada.id
@@ -168,7 +224,6 @@ export default function AprovacaoBeneficio() {
       );
 
       toast.success("Solicitação aprovada com sucesso!");
-      // volta para detalhe e recarrega os documentos gerados
       setModo("detalhe");
       await buscarDocumentos(solicitacaoSelecionada.id, solicitacaoSelecionada.colaborador.id);
     } catch (e) {
@@ -195,8 +250,14 @@ export default function AprovacaoBeneficio() {
           <div className="flex items-center gap-2 w-full max-w-4xl">
             <div className="flex flex-col gap-3">
               <Label htmlFor="beneficiado" className="px-1">Beneficiado</Label>
-              <form className="flex flex-1 min-w-0">
-                <Input type="text" placeholder="Pesquise o beneficiado" className="flex-1 min-w-0 rounded-r-none" />
+              <form className="flex flex-1 min-w-0" onSubmit={handleSearch}>
+                <Input 
+                  type="text" 
+                  placeholder="Pesquise o beneficiado" 
+                  className="flex-1 min-w-0 rounded-r-none" 
+                  value={pesquisarBeneficiado}
+                  onChange={(e) => setPesquisarBeneficiado(e.target.value)} 
+                />
                 <Button type="submit" className="flex-none rounded-l-none bg-[var(--verde-800)] hover:bg-[var(--verde-900)]">
                   <Search className="h-4 w-4 text-[var(--branco)]" />
                 </Button>
@@ -205,13 +266,22 @@ export default function AprovacaoBeneficio() {
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="beneficio" className="px-1">Benefício</Label>
-              <Select>
-                <SelectTrigger className="w-[220px]"><SelectValue placeholder="Selecione o benefício" /></SelectTrigger>
+              <Select
+                value={beneficioSelecionado} 
+                onValueChange={setBeneficioSelecionado}
+              >
+                <SelectTrigger className="w-[220px]">
+                  <SelectValue placeholder="Selecione o benefício" />
+                </SelectTrigger>
                 <SelectContent className="w-[220px] bg-[var(--cinza-200)]">
                   <SelectGroup>
                     <SelectLabel>Benefícios</SelectLabel>
-                    <SelectItem value="beneficio1">Dentista</SelectItem>
-                    <SelectItem value="beneficio2">Óculos</SelectItem>
+                    <SelectItem value={BENEFICIO_ALL}>Todos</SelectItem>
+                    {beneficios.map((beneficio) => (
+                      <SelectItem key={beneficio.id} value={beneficio.nome}>
+                        {beneficio.nome}
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -219,32 +289,42 @@ export default function AprovacaoBeneficio() {
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="date" className="px-1">Data</Label>
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" id="date" className="w-[250px] justify-between font-normal">
-                    {date ? date.toLocaleDateString() : "Selecione a data"}
-                    <ChevronDownIcon className="ml-2 h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+             <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" id="date" className="w-[250px] justify-between font-normal">
+                  {date ? format(date, "dd/MM/yyyy") : "Selecione a data"}
+                  <ChevronDownIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                <div className="p-2">
                   <Calendar
                     mode="single"
                     selected={date}
+                    locale={ptBR}
                     captionLayout="dropdown"
                     onSelect={(d) => { setDate(d); setOpen(false); }}
                   />
-                </PopoverContent>
-              </Popover>
+                  {date && (
+                    <div className="mt-2 flex justify-end">
+                      <Button variant="ghost" size="sm" onClick={() => setDate(undefined)}>
+                        Limpar data
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
             </div>
           </div>
 
           <div className="space-y-4 mt-4 max-h-[60vh] overflow-y-auto pr-2">
             {loading ? (
               <div className="text-center">Carregando solicitações...</div>
-            ) : solicitacoes.length === 0 ? (
+            ) : solicitacoesFiltradas.length === 0 ? (
               <div className="text-center">Nenhuma solicitação encontrada</div>
             ) : (
-              solicitacoes.map((solicitacao) => (
+              solicitacoesFiltradas.map((solicitacao) => (
                 <div key={solicitacao.id} className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center">
                   <div className="flex flex-col gap-1">
                     <div className="flex gap-2">
