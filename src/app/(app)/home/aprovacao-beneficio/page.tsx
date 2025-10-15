@@ -20,12 +20,26 @@ import {
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
-type Dependente = { id: string; nome: string; };
-type Colaborador = {
-  id: string; nome: string; matricula: string; dtNascimento: string;
-  funcao: string; genero: string; cidade: string; dependentes: Dependente[];
+type Dependente = { 
+  id: string; 
+  nome: string; 
 };
-type Beneficio = { id: string; nome: string; descricao: string; percentualDesconto: number; };
+type Colaborador = {
+  id: string; 
+  nome: string; 
+  matricula: string; 
+  dtNascimento: string;
+  funcao: string; 
+  genero: string; 
+  cidade: string; 
+  dependentes: Dependente[];
+};
+type Beneficio = { 
+  id: string; 
+  nome: string; 
+  descricao: string; 
+  percentualDesconto: number; 
+};
 type Solicitacao = {
   id: string;
   colaborador: Colaborador;
@@ -36,9 +50,10 @@ type Solicitacao = {
   descricao: string;
   qtdeParcelas: number;
   dataSolicitacao: string;
-  tipoPagamento: "DESCONTADO_FOLHA" | "PAGAMENTO_UNICO";
-  status: "PENDENTE" | "APROVADO" | "REJEITADO";
+  tipoPagamento: "DESCONTADO_FOLHA" | "PAGAMENTO_UNICO" | "PAGAMENTO_PROPRIO";
+  status:  "APROVADA" | "REJEITADA" | "CANCELADA" | "PENDENTE_APROVACAO" | "PENDENTE_ASSINATURA";
 };
+
 type Documento = {
   nomeArquivoUnico: string;
   nomeArquivoOriginal: string;
@@ -74,7 +89,7 @@ export default function AprovacaoBeneficio() {
     (s ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
   const solicitacoesFiltradas = useMemo(() => {
-  let base = solicitacoes.filter(s => s.status === "PENDENTE");
+  let base = solicitacoes.filter(s => s.status === "PENDENTE_ASSINATURA", "PENDENTE_APROVACAO");
 
     const q = norm(pesquisarBeneficiado.trim());
     if (q) {
@@ -210,7 +225,7 @@ export default function AprovacaoBeneficio() {
           s.id === solicitacaoSelecionada.id
             ? {
                 ...s,
-                status: "APROVADO",
+                status: "APROVADA",
                 valorTotal: payload.valorTotal,
                 desconto: payload.desconto
               }
