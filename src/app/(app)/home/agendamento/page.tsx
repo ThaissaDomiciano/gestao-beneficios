@@ -4,7 +4,20 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { getAuthHeader } from '@/app/api/lib/authHeader';
 import { toast } from "sonner";
-import { CalendarDays, CalendarIcon, X, Check, Clock } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { 
+  CalendarDays, 
+  CalendarIcon, 
+  X, 
+  Check, 
+  Clock 
+} from "lucide-react";
 import {
   Dialog,
   DialogClose,
@@ -15,14 +28,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { cn } from "@/lib/utils";
+import { 
+  Popover, 
+  PopoverTrigger, 
+  PopoverContent 
+} from "@/components/ui/popover";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -48,15 +58,34 @@ type Agendamento = {
 };
 
 export default function Agendamento() {
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [date, setDate] = React.useState<Date | undefined>(undefined);
   const [modo, setModo] = React.useState<"detalhe" | "remarcar">("detalhe");
   const [dataSelecionada, setDataSelecionada] = useState<Date | undefined>(new Date());
   const [hora, setHora] = useState("13:00");
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<Agendamento | null>(null);
   const [loading, setLoading] = useState(false);
+  const [filteredAgendamentos, setFilteredAgendamentos] = useState<Agendamento[]>([]);
 
-  useEffect(() => { buscarAgendamentos(); }, []);
+  useEffect(() => {
+    buscarAgendamentos();
+  }, []);
+
+  useEffect(() => {
+    if (!date) {
+      setFilteredAgendamentos(agendamentos);
+      return;
+    }
+    const filtered = agendamentos.filter((agendamento) => {
+      const agendamentoDate = new Date(agendamento.horario);
+      return (
+        agendamentoDate.getDate() === date.getDate() &&
+        agendamentoDate.getMonth() === date.getMonth() &&
+        agendamentoDate.getFullYear() === date.getFullYear()
+      );
+    });
+    setFilteredAgendamentos(filtered);
+  }, [date, agendamentos]);
 
   async function buscarAgendamentos() {
     setLoading(true);
@@ -65,6 +94,7 @@ export default function Agendamento() {
       if (!res.ok) throw new Error("Erro ao carregar agendamentos");
       const data = await res.json();
       setAgendamentos(data.data || []);
+      setFilteredAgendamentos(data.data || []);
     } catch (error) {
       console.error(error);
       toast.error("Não foi possível carregar os agendamentos");
@@ -92,19 +122,30 @@ export default function Agendamento() {
                 mode="single"
                 selected={date}
                 onSelect={setDate}
-                className="rounded-md border shadow-sm"
+                className="rounded-md border shadow-sm size-100"
                 captionLayout="dropdown"
+                modifiers={{
+                  selected: (day) => date ? day.getTime() === date.getTime() : false
+                }}
+                modifiersStyles={{
+                  selected: {
+                    backgroundColor: 'var(--verde-900)',
+                    color: 'var(--branco)',
+                    fontWeight: 'bold',
+                    borderRadius: '4px'
+                  }
+                }}
               />
             </div>
 
             <div className="space-y-4">
               {loading ? (
                 <div>Carregando agendamentos...</div>
-              ) : agendamentos.length === 0 ? (
+              ) : filteredAgendamentos.length === 0 ? (
                 <div>Nenhum agendamento encontrado</div>
               ) : (
                 <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3">
-                  {agendamentos.map((agendamento) => (
+                  {filteredAgendamentos.map((agendamento) => (
                     <div
                       key={agendamento.idAgendamento}
                       className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center"
