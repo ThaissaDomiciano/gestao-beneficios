@@ -23,17 +23,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Colaborador } from "@/types/index";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
-
-type Colaborador = {
-  matricula: string
-  nome: string
-  dtNascimento: string
-  funcao: string
-  genero: string
-  cidade: string
-}
 
 export default function PesquisarColaborador() {
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([])
@@ -192,8 +184,8 @@ export default function PesquisarColaborador() {
                               onClick={() => setSelectedTab("consultas")}
                               className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${
                                 selectedTab === "consultas"
-                                  ? "bg-[var(--verde-800)] text-white border-[var(--verde-800)]"
-                                  : "bg-white text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                                  ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
+                                  : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
                               }`}
                             >
                               Consultas
@@ -203,8 +195,8 @@ export default function PesquisarColaborador() {
                               onClick={() => setSelectedTab("beneficios")}
                               className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${
                                 selectedTab === "beneficios"
-                                  ? "bg-[var(--verde-800)] text-white border-[var(--verde-800)]"
-                                  : "bg-white text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                                  ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
+                                  : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
                               }`}
                             >
                               Benefícios

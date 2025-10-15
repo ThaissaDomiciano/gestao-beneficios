@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { getAuthHeader } from '@/app/api/lib/authHeader';
 import { ApiResponse } from '@/types/apiResponse';
+import type { Especialidade } from '@/types/index';
 import { toast } from "sonner";
 import { Stethoscope, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -36,8 +37,6 @@ import {
 } from "@/components/ui/dialog";
  
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
- 
-type Especialidade = { id: string; nome: string };
  
 const dias = [
   "Segunda",

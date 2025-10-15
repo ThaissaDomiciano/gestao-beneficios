@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import type { Agendamento as AgendamentoType} from "@/types/index";
 import { 
   CalendarDays, 
   CalendarIcon, 
@@ -36,36 +37,15 @@ import {
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
-type Dependente = { id: string; nome: string };
-type Colaborador = {
-  id: string; nome: string; matricula: string; dtNascimento: string;
-  funcao: string; genero: string; cidade: string; dependentes: Dependente[];
-};
-type Especialidade = { id: string; nome: string };
-type Disponibilidade = { id: string; dia: number };
-type Medico = {
-  id: string; nome: string; email: string; especialidade: Especialidade;
-  disponibilidade: Disponibilidade[]; horaEntrada: string; horaPausa: string;
-  horaVolta: string; horaSaida: string;
-};
-type Agendamento = {
-  idAgendamento: string;
-  colaborador: Colaborador;
-  dependente: Dependente | null;
-  medico: Medico;
-  horario: string;
-  status: "AGENDADO" | "CANCELADO" | "REALIZADO";
-};
-
 export default function Agendamento() {
   const [date, setDate] = React.useState<Date | undefined>(undefined);
   const [modo, setModo] = React.useState<"detalhe" | "remarcar">("detalhe");
   const [dataSelecionada, setDataSelecionada] = useState<Date | undefined>(new Date());
   const [hora, setHora] = useState("13:00");
-  const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
-  const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<Agendamento | null>(null);
+  const [agendamentos, setAgendamentos] = useState<AgendamentoType[]>([]);
+  const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<AgendamentoType | null>(null);
   const [loading, setLoading] = useState(false);
-  const [filteredAgendamentos, setFilteredAgendamentos] = useState<Agendamento[]>([]);
+  const [filteredAgendamentos, setFilteredAgendamentos] = useState<AgendamentoType[]>([]);
 
   useEffect(() => {
     buscarAgendamentos();
@@ -162,7 +142,7 @@ export default function Agendamento() {
                       </div>
 
                       <div className="flex flex-col items-end gap-2">
-                        <p className="text-sm text-gray-800">
+                        <p className="text-sm text-[var(--cinza-700)]">
                           {format(new Date(agendamento.horario), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                         </p>
                         <Dialog>
@@ -176,7 +156,7 @@ export default function Agendamento() {
 
                           <DialogContent className="sm:max-w-[520px] bg-[var(--cinza-200)]">
                             <DialogHeader>
-                              <DialogTitle className="text-2xl font-bold text-emerald-700">
+                              <DialogTitle className="text-2xl font-bold text-[var(--verde-900)]">
                                 Detalhe do agendamento
                               </DialogTitle>
                               <DialogDescription className="sr-only">

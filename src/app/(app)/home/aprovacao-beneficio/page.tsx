@@ -5,64 +5,44 @@ import { format, startOfDay, endOfDay, isWithinInterval, parseISO } from "date-f
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { getAuthHeader } from '@/app/api/lib/authHeader';
+import type { Solicitacao, Documento, Beneficio} from "@/types/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import {
-  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
+  Select, 
+  SelectContent, 
+  SelectGroup, 
+  SelectItem, 
+  SelectLabel, 
+  SelectTrigger, 
+  SelectValue
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronDownIcon, CircleCheckBig, Eye, Search, X } from "lucide-react";
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from "@/components/ui/popover";
+import { 
+  Check, 
+  ChevronDownIcon, 
+  CircleCheckBig, 
+  Eye, 
+  Search, 
+  X 
+} from "lucide-react";
 import {
-  Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger
+  Dialog, 
+  DialogClose, 
+  DialogContent, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger
 } from "@/components/ui/dialog";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
-
-type Dependente = { 
-  id: string; 
-  nome: string; 
-};
-type Colaborador = {
-  id: string; 
-  nome: string; 
-  matricula: string; 
-  dtNascimento: string;
-  funcao: string; 
-  genero: string; 
-  cidade: string; 
-  dependentes: Dependente[];
-};
-type Beneficio = { 
-  id: string; 
-  nome: string; 
-  descricao: string; 
-  percentualDesconto: number; 
-};
-type Solicitacao = {
-  id: string;
-  colaborador: Colaborador;
-  dependente: Dependente | null;
-  beneficio: Beneficio;
-  valorTotal: number;
-  desconto: number;
-  descricao: string;
-  qtdeParcelas: number;
-  dataSolicitacao: string;
-  tipoPagamento: "DESCONTADO_FOLHA" | "PAGAMENTO_UNICO" | "PAGAMENTO_PROPRIO";
-  status:  "APROVADA" | "REJEITADA" | "CANCELADA" | "PENDENTE_APROVACAO" | "PENDENTE_ASSINATURA";
-};
-
-type Documento = {
-  nomeArquivoUnico: string;
-  nomeArquivoOriginal: string;
-  tamanho: number;
-  dataUpload: string;
-  contentType: string;
-  tipoDocumento?: string;
-  dataAssinatura?: string | null;
-};
 
 export default function AprovacaoBeneficio() {
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
@@ -89,7 +69,7 @@ export default function AprovacaoBeneficio() {
     (s ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
   const solicitacoesFiltradas = useMemo(() => {
-  let base = solicitacoes.filter(s => s.status === "PENDENTE_ASSINATURA", "PENDENTE_APROVACAO");
+  let base = solicitacoes.filter(s => s.status === "PENDENTE_APROVACAO");
 
     const q = norm(pesquisarBeneficiado.trim());
     if (q) {
@@ -350,7 +330,7 @@ export default function AprovacaoBeneficio() {
                   </div>
 
                   <div className="flex flex-col items-end gap-2">
-                    <p className="text-sm text-gray-800">
+                    <p className="text-sm text-[var(--cinza-700)]">
                       {format(new Date(solicitacao.dataSolicitacao), "dd/MM/yyyy", { locale: ptBR })}
                     </p>
 
@@ -367,7 +347,7 @@ export default function AprovacaoBeneficio() {
                         {solicitacaoSelecionada && modo === "detalhe" ? (
                           <>
                             <DialogHeader>
-                              <DialogTitle className="text-2xl font-bold text-emerald-700">Detalhe do benefício</DialogTitle>
+                              <DialogTitle className="text-2xl font-bold text-[var(--verde-900)]">Detalhe do benefício</DialogTitle>
                             </DialogHeader>
 
                             <div className="space-y-3">
@@ -429,7 +409,7 @@ export default function AprovacaoBeneficio() {
                         ) : (
                           <>
                             <DialogHeader>
-                              <DialogTitle className="text-2xl font-bold text-emerald-700">Aprovar solicitação</DialogTitle>
+                              <DialogTitle className="text-2xl font-bold text-[var(--verde-900)]">Aprovar solicitação</DialogTitle>
                             </DialogHeader>
 
                             <div className="space-y-4">

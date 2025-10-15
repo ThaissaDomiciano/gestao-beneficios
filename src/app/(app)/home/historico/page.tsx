@@ -5,11 +5,17 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getAuthHeader } from "@/app/api/lib/authHeader";
 import { toast } from "sonner";
+import type { Agendamento, Solicitacao } from "@/types/index";
 import { ChevronDownIcon, History, Search } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -28,36 +34,8 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
-
-type Colaborador = { id: string; nome: string };
-type Dependente = { id: string; nome: string };
-type Especialidade = { id: string; nome: string } | null | undefined;
-type Medico = { id: string; nome: string; especialidade?: Especialidade };
-type Agendamento = {
-  idAgendamento: string;
-  colaborador: Colaborador;
-  dependente: Dependente | null;
-  medico?: Medico | null;
-  horario: string;
-  status: "AGENDADO" | "CANCELADO" | "REALIZADO";
-};
-type Beneficio = { id: string; nome: string; descricao: string; percentualDesconto: number };
-type Solicitacao = {
-  id: string;
-  colaborador: Colaborador;
-  dependente: Dependente | null;
-  beneficio: Beneficio;
-  valorTotal: number;
-  desconto: number;
-  descricao: string;
-  qtdeParcelas: number;
-  dataSolicitacao: string;
-  tipoPagamento: "DESCONTADO_FOLHA" | "PAGAMENTO_UNICO" | "PAGAMENTO_PROPRIO";
-  status: "APROVADA" | "REJEITADA" | "CANCELADA" | "PENDENTE_APROVACAO" | "PENDENTE_ASSINATURA";
-};
 
 export default function Historico() {
   const [selectedTab, setSelectedTab] = useState<"agendamento" | "beneficio">("agendamento");
@@ -148,8 +126,8 @@ export default function Historico() {
               onClick={() => setSelectedTab("agendamento")}
               className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${
                 selectedTab === "agendamento"
-                  ? "bg-[var(--verde-800)] text-white border-[var(--verde-800)]"
-                  : "bg-white text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                  ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
+                  : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
               }`}
             >
               Agendamento
@@ -158,8 +136,8 @@ export default function Historico() {
               onClick={() => setSelectedTab("beneficio")}
               className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${
                 selectedTab === "beneficio"
-                  ? "bg-[var(--verde-800)] text-white border-[var(--verde-800)]"
-                  : "bg-white text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                  ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
+                  : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
               }`}
             >
               Benefício
