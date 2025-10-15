@@ -72,20 +72,20 @@ function InnerSidebar() {
   useClickAway(ref, () => { if (open) setOpen(false) })
 
   useEffect(() => {
-    const fetchUsername = () => {
-      const token = localStorage.getItem("gb_token")
-      if (token) {
-        try {
-          const decoded = JSON.parse(atob(token.split(".")[1]))
-          setUsername(decoded.nome || "Usuário")
-        } catch (error) {
-          console.error("Erro ao decodificar token:", error)
-          setUsername("Usuário")
-        }
+  const fetchUsername = () => {
+    const token = localStorage.getItem("gb_token")
+    if (token) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(token.split(".")[1]))))
+        setUsername(decoded.nome || "Usuário")
+      } catch (error) {
+        console.error("Erro ao decodificar token:", error)
+        setUsername("Usuário")
       }
     }
-    fetchUsername()
-  }, [])
+  }
+  fetchUsername()
+}, [])
 
   const handleOpenOnPointerDownCapture: React.PointerEventHandler<HTMLDivElement> = (e) => {
     if (!open) {

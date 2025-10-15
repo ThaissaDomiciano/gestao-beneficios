@@ -104,7 +104,7 @@ export default function CadastroBeneficio() {
               control={form.control}
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>Porcentagem</FormLabel>
+                  <FormLabel>Porcentagem de desconto</FormLabel>
                   <FormControl>
                     <Input
                       type="number"

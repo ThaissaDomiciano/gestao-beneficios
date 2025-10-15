@@ -102,7 +102,7 @@ export default function Agendamento() {
                 mode="single"
                 selected={date}
                 onSelect={setDate}
-                className="rounded-md border shadow-sm size-100"
+                className="rounded-md border shadow-sm w-[400px]"
                 captionLayout="dropdown"
                 modifiers={{
                   selected: (day) => date ? day.getTime() === date.getTime() : false
