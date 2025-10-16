@@ -30,6 +30,10 @@
   --warning: #FFCC00;
   --success: #5C8F0E;
 
+  --alerta-800: #FFEA97;
+  --sucesso-800: #D6FA9E;
+  --erro-800: #FC6E6E;
+
   --font-roboto: "Roboto", sans-serif;
 
   --sidebar: var(--verde-900);

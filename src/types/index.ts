@@ -38,7 +38,7 @@ export type Agendamento = {
   dependente: Dependente | null;
   medico: Medico;
   horario: string;
-  status: "AGENDADO" | "CANCELADO" | "REALIZADO";
+  status: "AGENDADO" | "CANCELADO" | "REALIZADO" | "FALTOU" | "CONCLUIDO";
 };
 
 export type Beneficio = { 

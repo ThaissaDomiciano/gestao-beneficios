@@ -19,6 +19,7 @@ import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { Badge } from "@/components/ui/badge";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -320,7 +321,21 @@ export default function Historico() {
                           <TableCell>{a.especialidadeNome}</TableCell>
                           <TableCell>{a.dataFmt}</TableCell>
                           <TableCell>{a.horaFmt}</TableCell>
-                          <TableCell>{a.status}</TableCell>
+                          <TableCell>
+                        <Badge
+                          className={
+                            a.status === "REALIZADO" || a.status === "CONCLUIDO"
+                              ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                              : a.status === "AGENDADO"
+                              ? "bg-[var(--alerta-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                              : a.status === "FALTOU" || a.status === "CANCELADO"
+                              ? "bg-[var(--erro-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                              : "bg-gray-100 text-[var(--cinza-700)] border-2 border-black/50"
+                          }
+                        >
+                          {a.status.replace("_", " ")}
+                        </Badge>
+                      </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -432,7 +447,21 @@ export default function Historico() {
                       <TableCell>{s.dataFmt}</TableCell>
                       <TableCell>{s.valorTotal}</TableCell>
                       <TableCell>{s.desconto}</TableCell>
-                      <TableCell>{s.status}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={
+                            s.status === "APROVADA"
+                              ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                              : s.status === "REJEITADA" || s.status === "CANCELADA"
+                              ? "bg-red-100 text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                              : s.status === "PENDENTE" || s.status === "PENDENTE_ASSINATURA"
+                              ? "bg-[var(--alerta-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                              : "bg-gray-100 text-[var(--cinza-700)] border-2 border-black/50"
+                          }
+                        >
+                          {s.status.replace("_", " ")}
+                        </Badge>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
