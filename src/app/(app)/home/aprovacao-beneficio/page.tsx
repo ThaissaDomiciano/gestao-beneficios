@@ -41,6 +41,7 @@ import {
   DialogTitle, 
   DialogTrigger
 } from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -334,7 +335,10 @@ export default function AprovacaoBeneficio() {
 
           <div className="space-y-4 mt-4 max-h-[60vh] overflow-y-auto pr-2">
             {loading ? (
-              <div className="text-center">Carregando solicitações...</div>
+               <div className="flex flex-col items-center justify-center">
+                                  <Spinner />
+                                  <p className="mt-2">Carregando...</p>
+                                </div>
             ) : solicitacoesFiltradas.length === 0 ? (
               <div className="text-center">Nenhuma solicitação encontrada</div>
             ) : (

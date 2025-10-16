@@ -18,6 +18,7 @@ import {
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -300,7 +301,12 @@ export default function Historico() {
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center">Carregando agendamentos...</TableCell>
+                        <TableCell colSpan={6} className="text-center"> 
+                         <div className="flex flex-col items-center justify-center">
+                                  <Spinner />
+                                  <p className="mt-2">Carregando...</p>
+                                </div>
+                        </TableCell>
                       </TableRow>
                     ) : linhasAFiltered.length === 0 ? (
                       <TableRow>

@@ -34,6 +34,7 @@ import {
   PopoverTrigger, 
   PopoverContent 
 } from "@/components/ui/popover";
+import { Spinner } from "@/components/ui/spinner";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -120,7 +121,10 @@ export default function Agendamento() {
 
             <div className="space-y-4">
               {loading ? (
-                <div>Carregando agendamentos...</div>
+                 <div className="flex flex-col items-center justify-center">
+                                  <Spinner />
+                                  <p className="mt-2">Carregando...</p>
+                                </div>
               ) : filteredAgendamentos.length === 0 ? (
                 <div>Nenhum agendamento encontrado</div>
               ) : (
