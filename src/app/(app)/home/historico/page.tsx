@@ -109,15 +109,52 @@ export default function Historico() {
   }, [linhasA, searchA, statusA, dateA]);
 
   const linhasB = useMemo(() => {
+    const toBRL = (n?: number) =>
+      typeof n === "number"
+        ? n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+        : "-";
+
     return solicitacoes.map((s) => {
       const paciente = s.dependente?.nome ?? s.colaborador?.nome ?? "—";
       const tipoPagamento = s.tipoPagamento ?? "—";
+
       const dt = new Date(s.dataSolicitacao);
       const dataFmt = isNaN(+dt) ? "—" : format(dt, "dd/MM/yyyy", { locale: ptBR });
-      const valorTotal = s.valorTotal ?? "-";
-      const desconto = s.desconto ?? "-";
+
+      const totalNum = typeof s.valorTotal === "number" ? s.valorTotal : undefined;
+      const descField = typeof s.desconto === "number" ? s.desconto : undefined;
+      const pctApi = typeof (s as any)?.beneficio?.percentualDesconto === "number"
+        ? (s as any).beneficio.percentualDesconto
+        : undefined;
+
+      let descontoValor: number | undefined = undefined;
+      if (typeof totalNum === "number" && typeof pctApi === "number" && pctApi >= 0 && pctApi <= 100) {
+        descontoValor = totalNum * (pctApi / 100);
+      }
+      
+      else if (typeof totalNum === "number" && typeof descField === "number" && descField > 0 && descField < 1) {
+        descontoValor = totalNum * descField;
+      }
+      
+      else if (typeof totalNum === "number" && typeof descField === "number" && descField >= 1 && descField <= totalNum) {
+        descontoValor = descField;
+      }
+
+      const valorTotal = toBRL(totalNum);
+      const descontoFmt = typeof descontoValor === "number" ? toBRL(descontoValor) : "-";
+
       const status = s.status ?? "-";
-      return { ...s, paciente, tipoPagamento, dataFmt, valorTotal, desconto, status, _dt: dt };
+
+      return {
+        ...s,
+        paciente,
+        tipoPagamento,
+        dataFmt,
+        valorTotal,    
+        desconto: descontoFmt,
+        status,
+        _dt: dt,
+      };
     });
   }, [solicitacoes]);
 
@@ -360,41 +397,41 @@ export default function Historico() {
               </div>
 
               <div className="overflow-auto max-h-[60vh] pr-2 pb-10">
-                <Table className="w-full mb-10">
-                  <TableHeader>
-                    <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Tipo de Pagamento</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Valor Total</TableHead>
-                      <TableHead>Desconto</TableHead>
-                      <TableHead>Status</TableHead>
+              <Table className="w-full mb-10">
+              <TableHeader>
+                <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Tipo de Pagamento</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Valor Total</TableHead>
+                  <TableHead>Desconto</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center">Carregando solicitações...</TableCell>
+                  </TableRow>
+                ) : linhasBFiltered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center">Nenhuma solicitação encontrada</TableCell>
+                  </TableRow>
+                ) : (
+                  linhasBFiltered.map((s) => (
+                    <TableRow key={s.id}>
+                      <TableCell className="p-4">{s.paciente}</TableCell>
+                      <TableCell>{s.tipoPagamento}</TableCell>
+                      <TableCell>{s.dataFmt}</TableCell>
+                      <TableCell>{s.valorTotal}</TableCell>
+                      <TableCell>{s.desconto}</TableCell>
+                      <TableCell>{s.status}</TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center">Carregando solicitações...</TableCell>
-                      </TableRow>
-                    ) : linhasBFiltered.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center">Nenhuma solicitação encontrada</TableCell>
-                      </TableRow>
-                    ) : (
-                      linhasBFiltered.map((s) => (
-                        <TableRow key={s.id}>
-                          <TableCell className="p-4">{s.paciente}</TableCell>
-                          <TableCell>{s.tipoPagamento}</TableCell>
-                          <TableCell>{s.dataFmt}</TableCell>
-                          <TableCell>{s.valorTotal}</TableCell>
-                          <TableCell>{s.desconto}</TableCell>
-                          <TableCell>{s.status}</TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                  <TableFooter />
-                </Table>
+                  ))
+                )}
+              </TableBody>
+            </Table>
                 <div className="h-8" />
               </div>
             </div>

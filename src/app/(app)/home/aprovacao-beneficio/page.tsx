@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { format, startOfDay, endOfDay, isWithinInterval, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
@@ -53,7 +53,8 @@ export default function AprovacaoBeneficio() {
   const [modo, setModo] = useState<"detalhe" | "aprovar">("detalhe");
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [valorTotal, setValorTotal] = useState<string>("");
-  const [desconto, setDesconto] = useState<string>("");
+  const [valorComDesconto, setValorComDesconto] = useState<string>("");
+  const [desconto, setDesconto] = useState<string>("")
   const [pesquisarBeneficiado, setPesquisarBeneficiado] = useState("");
   const [beneficios, setBeneficios] = useState<Beneficio[]>([]);
   const BENEFICIO_ALL = "ALL";
@@ -69,8 +70,7 @@ export default function AprovacaoBeneficio() {
     (s ?? "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
   const solicitacoesFiltradas = useMemo(() => {
-  let base = solicitacoes.filter(s => s.status === "PENDENTE_APROVACAO");
-
+    let base = solicitacoes.filter(s => s.status === "PENDENTE");
     const q = norm(pesquisarBeneficiado.trim());
     if (q) {
       base = base.filter((s) => {
@@ -78,12 +78,10 @@ export default function AprovacaoBeneficio() {
         return norm(beneficiadoNome).includes(q);
       });
     }
-
     if (beneficioSelecionado !== BENEFICIO_ALL) {
       const alvo = norm(beneficioSelecionado);
       base = base.filter((s) => norm(s.beneficio.nome).includes(alvo));
     }
-
     if (date) {
       const start = startOfDay(date);
       const end = endOfDay(date);
@@ -92,14 +90,44 @@ export default function AprovacaoBeneficio() {
         return isWithinInterval(d, { start, end });
       });
     }
-
     return base;
   }, [solicitacoes, pesquisarBeneficiado, beneficioSelecionado, date]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
   };
-  
+
+  const calcularDesconto = (valor: string, percentual: number) => {
+    const valorNumerico = Number(String(valor).replace(/\./g, "").replace(",", ".")) || 0;
+    const descontoValor = (valorNumerico * percentual) / 100;
+    const valorFinal = valorNumerico - descontoValor;
+    return {
+      desconto: descontoValor,
+      valorComDesconto: valorFinal.toLocaleString('pt-BR', { 
+        style: 'currency', 
+        currency: 'BRL' 
+      })
+    };
+  };
+
+  const HandleValorTotalChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const novoValor = e.target.value;
+    setValorTotal(novoValor);
+  };
+
+  useEffect(() => {
+    if (!solicitacaoSelecionada) {
+      setValorComDesconto("");
+      return;
+    }
+    const { desconto: dsc, valorComDesconto: vcd } = calcularDesconto(
+      valorTotal || "0",
+      solicitacaoSelecionada.beneficio?.percentualDesconto ?? 0
+    );
+    setDesconto(String(dsc));
+    setValorComDesconto(vcd);
+  }, [valorTotal, solicitacaoSelecionada]);
+
   async function buscarSolicitacoes() {
     setLoading(true);
     try {
@@ -169,9 +197,7 @@ export default function AprovacaoBeneficio() {
 
   async function aprovarSolicitacao() {
     if (!solicitacaoSelecionada || isAproving) return;
-
     setIsAproving(true);
-
     const toNumber = (v: string) =>
       Number(String(v).replace(/\./g, "").replace(",", ".")) || 0;
 
@@ -192,14 +218,11 @@ export default function AprovacaoBeneficio() {
         headers: getAuthHeader({ withJsonBody: true }),
         body: JSON.stringify(payload)
       });
-
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
         throw new Error(txt || "Erro ao aprovar solicitação");
       }
-
       await res.json();
-
       setSolicitacoes((prev) =>
         prev.map((s) =>
           s.id === solicitacaoSelecionada.id
@@ -212,7 +235,6 @@ export default function AprovacaoBeneficio() {
             : s
         )
       );
-
       toast.success("Solicitação aprovada com sucesso!");
       setModo("detalhe");
       await buscarDocumentos(solicitacaoSelecionada.id, solicitacaoSelecionada.colaborador.id);
@@ -222,7 +244,7 @@ export default function AprovacaoBeneficio() {
     } finally {
       setIsAproving(false);
     }
-}
+  }
 
   return (
     <main className="min-h-screen w-screen max-w-none">
@@ -281,32 +303,32 @@ export default function AprovacaoBeneficio() {
 
             <div className="flex flex-col gap-3">
               <Label htmlFor="date" className="px-1">Data</Label>
-             <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" id="date" className="w-[250px] justify-between font-normal">
-                  {date ? format(date, "dd/MM/yyyy") : "Selecione a data"}
-                  <ChevronDownIcon className="ml-2 h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto overflow-hidden p-0 bg-[var(--cinza-200)]" align="start">
-                <div className="p-2">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    locale={ptBR}
-                    captionLayout="dropdown"
-                    onSelect={(d) => { setDate(d); setOpen(false); }}
-                  />
-                  {date && (
-                    <div className="mt-2 flex justify-end">
-                      <Button variant="ghost" size="sm" onClick={() => setDate(undefined)}>
-                        Limpar data
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" id="date" className="w-[250px] justify-between font-normal">
+                    {date ? format(date, "dd/MM/yyyy") : "Selecione a data"}
+                    <ChevronDownIcon className="ml-2 h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto overflow-hidden p-0 bg-[var(--cinza-200)]" align="start">
+                  <div className="p-2">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      locale={ptBR}
+                      captionLayout="dropdown"
+                      onSelect={(d) => { setDate(d); setOpen(false); }}
+                    />
+                    {date && (
+                      <div className="mt-2 flex justify-end">
+                        <Button variant="ghost" size="sm" onClick={() => setDate(undefined)}>
+                          Limpar data
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
@@ -420,16 +442,18 @@ export default function AprovacaoBeneficio() {
                                     inputMode="decimal"
                                     placeholder="Ex.: 540,00"
                                     value={valorTotal}
-                                    onChange={(e) => setValorTotal(e.target.value)}
+                                    onChange={HandleValorTotalChange}
                                   />
                                 </div>
                                 <div>
-                                  <Label>Valor com Desconto</Label>
+                                  <Label>
+                                    Valor com Desconto ({solicitacaoSelecionada?.beneficio.percentualDesconto}% off)
+                                  </Label>
                                   <Input
                                     inputMode="decimal"
-                                    placeholder="Ex.: 20,00"
-                                    value={desconto}
-                                    onChange={(e) => setDesconto(e.target.value)}
+                                    value={valorComDesconto}
+                                    disabled
+                                    className="bg-[var(--cinza-300)] text-[var(--cinza-800)]"
                                   />
                                 </div>
                               </div>
@@ -445,23 +469,23 @@ export default function AprovacaoBeneficio() {
                                 Cancelar
                               </Button>
 
-                             <Button
-                              className="gap-2 text-[var(--branco)] bg-[var(--verde-900)]"
-                              onClick={aprovarSolicitacao}
-                              disabled={isAproving}
-                            >
-                              {isAproving ? (
-                                <>
-                                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                  Aprovando...
-                                </>
-                              ) : (
-                                <>
-                                  <Check size={18} />
-                                  Confirmar
-                                </>
-                              )}
-                            </Button>
+                              <Button
+                                className="gap-2 text-[var(--branco)] bg-[var(--verde-900)]"
+                                onClick={aprovarSolicitacao}
+                                disabled={isAproving}
+                              >
+                                {isAproving ? (
+                                  <>
+                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                    Aprovando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Check size={18} />
+                                    Confirmar
+                                  </>
+                                )}
+                              </Button>
                             </DialogFooter>
                           </>
                         )}

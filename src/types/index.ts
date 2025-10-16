@@ -59,7 +59,7 @@ export type Solicitacao = {
   qtdeParcelas: number;
   dataSolicitacao: string;
   tipoPagamento: "DESCONTADO_FOLHA" | "PAGAMENTO_UNICO" | "PAGAMENTO_PROPRIO";
-  status:  "APROVADA" | "REJEITADA" | "CANCELADA" | "PENDENTE_APROVACAO" | "PENDENTE_ASSINATURA";
+  status:  "APROVADA" | "REJEITADA" | "CANCELADA" | "PENDENTE" | "PENDENTE_ASSINATURA";
 };
 
 export type Documento = {
