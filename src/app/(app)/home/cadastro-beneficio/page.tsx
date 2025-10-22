@@ -56,7 +56,6 @@ export default function CadastroBeneficio() {
         body: JSON.stringify(payload),
       });
 
-      console.log(res)
       if (!res.ok) {
         const err = await res.json().catch(() => ({} as any));
         throw new Error(err?.message || "Falha ao conectar");
