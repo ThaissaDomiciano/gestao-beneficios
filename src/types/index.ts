@@ -72,3 +72,10 @@ export type Documento = {
   dataAssinatura?: string | null;
 };
 
+export type DashboardKPIs = {
+  solicitacoesPendentes: number;
+  solicitacoesRecusadas: number;
+  solicitacoesPendenteAssinatura: number;
+  consultasPendentes: number;
+  consultasDoMes: number;
+}
