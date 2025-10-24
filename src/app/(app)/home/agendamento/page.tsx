@@ -7,11 +7,11 @@ import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { format, startOfMonth, endOfMonth, addDays } from "date-fns";
+import { format, startOfMonth, endOfMonth, addDays, set } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { Agendamento as AgendamentoType } from "@/types/index";
-import { CalendarDays, CalendarIcon, X, Check } from "lucide-react";
+import { CalendarDays, CalendarIcon, X, Check, FileSignatureIcon } from "lucide-react";
 import {
   Dialog, DialogClose, DialogContent, DialogDescription,
   DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -35,6 +35,7 @@ export default function Agendamento() {
   const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<AgendamentoType | null>(null);
   const [loading, setLoading] = useState(false);
   const [isCancelLoading, setIsCancelLoading] = useState(false);
+  const [isFaltaLoading, setIsFaltaLoading] = useState(false);
   const [slots, setSlots] = useState<SlotDisponibilidade[]>([]);
   const [carregandoSlots, setCarregandoSlots] = useState(false);
   const [slotSelecionadoISO, setSlotSelecionadoISO] = useState<string | null>(null);
@@ -370,7 +371,43 @@ export default function Agendamento() {
       setIsCancelLoading(false);
       return;
     }
+  }
 
+
+  const handleMarcarFalta = async () => {
+    if (!agendamentoSelecionado) return;
+
+    setIsFaltaLoading(true);
+
+    try {
+      const res = await fetch(
+        `${api}/agendamento/${agendamentoSelecionado.idAgendamento}/status`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+          body: JSON.stringify({ status: 'FALTOU' }),
+        }
+      );
+
+
+      if (!res.ok) {
+        setIsFaltaLoading(false);
+        const errorText = await res.text().catch(() => "");
+        throw new Error(`Falha ao marcar falta: ${errorText || res.status}`);
+
+      }
+
+      setAgendamentos(prev => prev.filter(a => a.idAgendamento !== agendamentoSelecionado.idAgendamento));
+      setFilteredAgendamentos(prev => prev.filter(a => a.idAgendamento !== agendamentoSelecionado.idAgendamento));
+      setAgendamentoSelecionado(null);
+      setModo("detalhe");
+      toast.success("Falta marcada com sucesso!");
+      setIsFaltaLoading(false);
+    } catch {
+      toast.error("Não foi possível marcar a falta.");
+      setIsFaltaLoading(false);
+      return;
+    }
 
   }
 
@@ -500,7 +537,17 @@ export default function Agendamento() {
                                       Remarcar
                                     </Button>
                                     <Button
-                                      onClick={() => handleCancelar()}
+                                      onClick={() => handleMarcarFalta()}
+                                      className="gap-2 bg-[var(--warning)] hover:bg-[var(--warning)]/80 cursor-pointer"
+                                      variant="secondary"
+                                      disabled={isCancelLoading}
+                                    >
+                                      {isFaltaLoading ? <Spinner /> : <FileSignatureIcon size={18} className="text-[var(--branco)]" />}
+
+                                      {isFaltaLoading ? "Marcando..." : "Marcar Falta"}
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleMarcarFalta()}
                                       className="gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80 cursor-pointer"
                                       variant="secondary"
                                       disabled={isCancelLoading}

@@ -6,7 +6,7 @@ import { ptBR } from "date-fns/locale";
 import { getAuthHeader } from "@/app/api/lib/authHeader";
 import { toast } from "sonner";
 import type { Agendamento, Solicitacao } from "@/types";
-import { ChevronDownIcon, History, Search } from "lucide-react";
+import { ChevronDownIcon, History, Search, MoreVertical } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,12 @@ import {
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 
@@ -28,6 +34,7 @@ export default function Historico() {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const [searchA, setSearchA] = useState("");
   const [statusA, setStatusA] = useState<string>("__all__");
@@ -51,6 +58,7 @@ export default function Historico() {
       if (!res.ok) throw new Error("Erro ao carregar agendamentos");
       const data = await res.json();
       setAgendamentos(data.data || []);
+      console.log(data);
     } catch (error) {
       console.error(error);
       toast.error("Não foi possível carregar os agendamentos");
@@ -74,14 +82,73 @@ export default function Historico() {
     }
   }
 
+  async function handleMarcarFalta(agendamentoId: string) {
+    setActionLoading(agendamentoId);
+    try {
+      const res = await fetch(
+        `${api}/agendamento/${agendamentoId}/status`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+          body: JSON.stringify({ status: 'FALTOU' }),
+        }
+      );
+
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "");
+        throw new Error(`Falha ao marcar falta: ${errorText || res.status}`);
+      }
+
+      setAgendamentos(prev => prev.map(a =>
+        a.idAgendamento === agendamentoId
+          ? { ...a, status: 'FALTOU' }
+          : a
+      ));
+      toast.success("Falta marcada com sucesso!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível marcar a falta.");
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleCancelar(agendamentoId: string) {
+    setActionLoading(agendamentoId);
+    try {
+      const res = await fetch(
+        `${api}/agendamento/${agendamentoId}/status`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+          body: JSON.stringify({ status: 'CANCELADO' }),
+        }
+      );
+
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => "");
+        throw new Error(`Falha ao cancelar: ${errorText || res.status}`);
+      }
+
+      setAgendamentos(prev => prev.map(a =>
+        a.idAgendamento === agendamentoId
+          ? { ...a, status: 'CANCELADO' }
+          : a
+      ));
+      toast.success("Agendamento cancelado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível cancelar o agendamento.");
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
   const linhasA = useMemo(() => {
     return agendamentos.map((a) => {
       const paciente = a.dependente?.nome ?? a.colaborador?.nome ?? "—";
       const medicoNome = a.medico?.nome ?? "—";
-      const especialidadeNome =
-        a.medico?.especialidade && "nome" in (a.medico.especialidade || {})
-          ? ((a.medico!.especialidade as any)?.nome ?? "—")
-          : "—";
+      const especialidadeNome = a.medico?.especialidade?.nome ?? "—";
       const dt = new Date(a.horario);
       const dataFmt = isNaN(+dt) ? "—" : format(dt, "dd/MM/yyyy", { locale: ptBR });
       const horaFmt = isNaN(+dt) ? "—" : format(dt, "HH:mm");
@@ -133,11 +200,11 @@ export default function Historico() {
       if (typeof totalNum === "number" && typeof pctApi === "number" && pctApi >= 0 && pctApi <= 100) {
         descontoValor = totalNum * (pctApi / 100);
       }
-      
+
       else if (typeof totalNum === "number" && typeof descField === "number" && descField > 0 && descField < 1) {
         descontoValor = totalNum * descField;
       }
-      
+
       else if (typeof totalNum === "number" && typeof descField === "number" && descField >= 1 && descField <= totalNum) {
         descontoValor = descField;
       }
@@ -152,7 +219,7 @@ export default function Historico() {
         paciente,
         tipoPagamento,
         dataFmt,
-        valorTotal,    
+        valorTotal,
         desconto: descontoFmt,
         status,
         _dt: dt,
@@ -197,21 +264,19 @@ export default function Historico() {
           <div className="flex gap-4">
             <button
               onClick={() => setSelectedTab("agendamento")}
-              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${
-                selectedTab === "agendamento"
-                  ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
-                  : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
-              }`}
+              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${selectedTab === "agendamento"
+                ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
+                : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                }`}
             >
               Agendamento
             </button>
             <button
               onClick={() => setSelectedTab("beneficio")}
-              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${
-                selectedTab === "beneficio"
-                  ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
-                  : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
-              }`}
+              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${selectedTab === "beneficio"
+                ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
+                : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                }`}
             >
               Benefício
             </button>
@@ -297,21 +362,22 @@ export default function Historico() {
                       <TableHead>Data</TableHead>
                       <TableHead>Horário</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="text-center">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center"> 
-                         <div className="flex flex-col items-center justify-center">
-                                  <Spinner />
-                                  <p className="mt-2">Carregando...</p>
-                                </div>
+                        <TableCell colSpan={7} className="text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <Spinner />
+                            <p className="mt-2">Carregando...</p>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ) : linhasAFiltered.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center">Nenhum agendamento encontrado</TableCell>
+                        <TableCell colSpan={7} className="text-center">Nenhum agendamento encontrado</TableCell>
                       </TableRow>
                     ) : (
                       linhasAFiltered.map((a) => (
@@ -322,20 +388,52 @@ export default function Historico() {
                           <TableCell>{a.dataFmt}</TableCell>
                           <TableCell>{a.horaFmt}</TableCell>
                           <TableCell>
-                        <Badge
-                          className={
-                            a.status === "REALIZADO" || a.status === "CONCLUIDO"
-                              ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
-                              : a.status === "AGENDADO"
-                              ? "bg-[var(--alerta-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
-                              : a.status === "FALTOU" || a.status === "CANCELADO"
-                              ? "bg-[var(--erro-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
-                              : "bg-gray-100 text-[var(--cinza-700)] border-2 border-black/50"
-                          }
-                        >
-                          {a.status.replace("_", " ")}
-                        </Badge>
-                      </TableCell>
+                            <Badge
+                              className={
+                                `font-semibold border-2 rounded-full  ${a.status === "CONCLUIDO"
+                                  ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] "
+                                  : a.status === "AGENDADO"
+                                    ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
+                                    : a.status === "FALTOU" || a.status === "CANCELADO"
+                                      ? "bg-[var(--erro-800)] text-[var(--cinza-700)]"
+                                      : "bg-gray-100 text-[var(--cinza-700)]"
+                                }`}
+                            >
+                              {a.status.replace("_", " ")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  disabled={actionLoading === a.idAgendamento || a.status === "FALTOU" || a.status === "CANCELADO"}
+                                >
+                                  {actionLoading === a.idAgendamento ? (
+                                    <Spinner className="h-4 w-4" />
+                                  ) : (
+                                    <MoreVertical className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-[var(--cinza-200)]">
+                                <DropdownMenuItem
+                                  onClick={() => handleMarcarFalta(a.idAgendamento)}
+                                  className="cursor-pointer"
+                                >
+                                  Marcar falta
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleCancelar(a.idAgendamento)}
+                                  className="cursor-pointer text-red-600 focus:text-red-600"
+                                >
+                                  Cancelar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -418,55 +516,55 @@ export default function Historico() {
               </div>
 
               <div className="overflow-auto max-h-[60vh] pr-2 pb-10">
-              <Table className="w-full mb-10">
-              <TableHeader>
-                <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Tipo de Pagamento</TableHead>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Valor Total</TableHead>
-                  <TableHead>Desconto</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center">Carregando solicitações...</TableCell>
-                  </TableRow>
-                ) : linhasBFiltered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center">Nenhuma solicitação encontrada</TableCell>
-                  </TableRow>
-                ) : (
-                  linhasBFiltered.map((s) => (
-                    <TableRow key={s.id}>
-                      <TableCell className="p-4">{s.paciente}</TableCell>
-                      <TableCell>{s.tipoPagamento}</TableCell>
-                      <TableCell>{s.dataFmt}</TableCell>
-                      <TableCell>{s.valorTotal}</TableCell>
-                      <TableCell>{s.desconto}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            s.status === "APROVADA"
-                              ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
-                              : s.status === "REJEITADA" || s.status === "CANCELADA"
-                              ? "bg-red-100 text-[var(--cinza-700)] font-semibold border-2 border-black/50"
-                              : s.status === "PENDENTE" || s.status === "PENDENTE_ASSINATURA"
-                              ? "bg-[var(--alerta-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
-                              : "bg-gray-100 text-[var(--cinza-700)] border-2 border-black/50"
-                          }
-                        >
-                          {s.status.replace("_", " ")}
-                        </Badge>
-                      </TableCell>
+                <Table className="w-full mb-10">
+                  <TableHeader>
+                    <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Tipo de Pagamento</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Valor Total</TableHead>
+                      <TableHead>Desconto</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  </TableHeader>
+
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center">Carregando solicitações...</TableCell>
+                      </TableRow>
+                    ) : linhasBFiltered.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center">Nenhuma solicitação encontrada</TableCell>
+                      </TableRow>
+                    ) : (
+                      linhasBFiltered.map((s) => (
+                        <TableRow key={s.id}>
+                          <TableCell className="p-4">{s.paciente}</TableCell>
+                          <TableCell>{s.tipoPagamento}</TableCell>
+                          <TableCell>{s.dataFmt}</TableCell>
+                          <TableCell>{s.valorTotal}</TableCell>
+                          <TableCell>{s.desconto}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                s.status === "APROVADA"
+                                  ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                                  : s.status === "REJEITADA" || s.status === "CANCELADA"
+                                    ? "bg-red-100 text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                                    : s.status === "PENDENTE" || s.status === "PENDENTE_ASSINATURA"
+                                      ? "bg-[var(--alerta-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                                      : "bg-gray-100 text-[var(--cinza-700)] border-2 border-black/50"
+                              }
+                            >
+                              {s.status.replace("_", " ")}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
                 <div className="h-8" />
               </div>
             </div>
