@@ -6,7 +6,7 @@ import { ptBR } from "date-fns/locale";
 import { getAuthHeader } from "@/app/api/lib/authHeader";
 import { toast } from "sonner";
 import type { Agendamento, Solicitacao } from "@/types";
-import { ChevronDownIcon, History, Search, MoreVertical } from "lucide-react";
+import { ChevronDownIcon, History, Search, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -40,25 +40,52 @@ export default function Historico() {
   const [statusA, setStatusA] = useState<string>("__all__");
   const [openA, setOpenA] = useState(false);
   const [dateA, setDateA] = useState<Date | undefined>(undefined);
+  const [pageA, setPageA] = useState(0);
+  const [sizeA, setSizeA] = useState(10);
+  const [totalPagesA, setTotalPagesA] = useState(0);
+  const [totalElementsA, setTotalElementsA] = useState(0);
 
   const [searchB, setSearchB] = useState("");
   const [statusB, setStatusB] = useState<string>("__all__");
   const [openB, setOpenB] = useState(false);
   const [dateB, setDateB] = useState<Date | undefined>(undefined);
+  const [pageB, setPageB] = useState(0);
+  const [sizeB, setSizeB] = useState(10);
+  const [totalPagesB, setTotalPagesB] = useState(0);
+  const [totalElementsB, setTotalElementsB] = useState(0);
 
   useEffect(() => {
     buscarAgendamentos();
+  }, [pageA, sizeA, statusA, dateA]);
+
+  useEffect(() => {
     buscarSolicitacoes();
-  }, []);
+  }, [pageB, sizeB, statusB, dateB]);
 
   async function buscarAgendamentos() {
     setLoading(true);
     try {
-      const res = await fetch(`${api}/agendamento`, { headers: getAuthHeader() });
+      const params = new URLSearchParams();
+      params.set('page', String(pageA));
+      params.set('size', String(sizeA));
+
+      if (statusA !== "__all__") {
+        params.set('status', statusA);
+      }
+
+      if (dateA) {
+        const dateStr = format(dateA, 'yyyy-MM-dd');
+        params.set('data', dateStr);
+      }
+
+      const queryString = params.toString();
+      const res = await fetch(`${api}/agendamento?${queryString}`, { headers: getAuthHeader() });
       if (!res.ok) throw new Error("Erro ao carregar agendamentos");
       const data = await res.json();
+
       setAgendamentos(data.data || []);
-      console.log(data);
+      setTotalPagesA(data.meta.pagination.totalPages || 0);
+      setTotalElementsA(data.meta.pagination.totalElements || 0);
     } catch (error) {
       console.error(error);
       toast.error("Não foi possível carregar os agendamentos");
@@ -70,10 +97,27 @@ export default function Historico() {
   async function buscarSolicitacoes() {
     setLoading(true);
     try {
-      const res = await fetch(`${api}/solicitacao`, { headers: getAuthHeader() });
+      const params = new URLSearchParams();
+      params.set('page', String(pageB));
+      params.set('size', String(sizeB));
+
+      if (statusB !== "__all__") {
+        params.set('status', statusB);
+      }
+
+      if (dateB) {
+        const dateStr = format(dateB, 'yyyy-MM-dd');
+        params.set('data', dateStr);
+      }
+
+      const queryString = params.toString();
+      const res = await fetch(`${api}/solicitacao?${queryString}`, { headers: getAuthHeader() });
       if (!res.ok) throw new Error("Erro ao carregar solicitações");
       const data = await res.json();
+      console.log(data);
       setSolicitacoes(data.data || []);
+      setTotalPagesB(data.meta.pagination.totalPages || 0);
+      setTotalElementsB(data.meta.pagination.totalElements || 0);
     } catch (error) {
       console.error(error);
       toast.error("Não foi possível carregar as solicitações");
@@ -163,19 +207,13 @@ export default function Historico() {
   }, [agendamentos]);
 
   const linhasAFiltered = useMemo(() => {
+    if (!searchA.trim()) return linhasA;
+
     return linhasA.filter((a) => {
-      const matchNome = !searchA.trim() || a.paciente.toLowerCase().includes(searchA.trim().toLowerCase());
-      const matchStatus = statusA === "__all__" || a.status === statusA;
-      const matchDate =
-        !dateA ||
-        (a._dt instanceof Date &&
-          !isNaN(+a._dt) &&
-          a._dt.getDate() === dateA.getDate() &&
-          a._dt.getMonth() === dateA.getMonth() &&
-          a._dt.getFullYear() === dateA.getFullYear());
-      return matchNome && matchStatus && matchDate;
+      const matchNome = a.paciente.toLowerCase().includes(searchA.trim().toLowerCase());
+      return matchNome;
     });
-  }, [linhasA, searchA, statusA, dateA]);
+  }, [linhasA, searchA]);
 
   const linhasB = useMemo(() => {
     const toBRL = (n?: number) =>
@@ -200,11 +238,9 @@ export default function Historico() {
       if (typeof totalNum === "number" && typeof pctApi === "number" && pctApi >= 0 && pctApi <= 100) {
         descontoValor = totalNum * (pctApi / 100);
       }
-
       else if (typeof totalNum === "number" && typeof descField === "number" && descField > 0 && descField < 1) {
         descontoValor = totalNum * descField;
       }
-
       else if (typeof totalNum === "number" && typeof descField === "number" && descField >= 1 && descField <= totalNum) {
         descontoValor = descField;
       }
@@ -234,19 +270,85 @@ export default function Historico() {
   }, [solicitacoes]);
 
   const linhasBFiltered = useMemo(() => {
+    if (!searchB.trim()) return linhasB;
+
     return linhasB.filter((s) => {
-      const matchNome = !searchB.trim() || s.paciente.toLowerCase().includes(searchB.trim().toLowerCase());
-      const matchStatus = statusB === "__all__" || s.status === statusB;
-      const matchDate =
-        !dateB ||
-        (s._dt instanceof Date &&
-          !isNaN(+s._dt) &&
-          s._dt.getDate() === dateB.getDate() &&
-          s._dt.getMonth() === dateB.getMonth() &&
-          s._dt.getFullYear() === dateB.getFullYear());
-      return matchNome && matchStatus && matchDate;
+      const matchNome = s.paciente.toLowerCase().includes(searchB.trim().toLowerCase());
+      return matchNome;
     });
-  }, [linhasB, searchB, statusB, dateB]);
+  }, [linhasB, searchB]);
+
+  const PaginationControls = ({
+    page,
+    totalPages,
+    totalElements,
+    size,
+    onPageChange,
+    onSizeChange
+  }: {
+    page: number;
+    totalPages: number;
+    totalElements: number;
+    size: number;
+    onPageChange: (newPage: number) => void;
+    onSizeChange: (newSize: number) => void;
+  }) => {
+    const startItem = page * size + 1;
+    const endItem = Math.min((page + 1) * size, totalElements);
+
+    return (
+      <div className="flex items-center justify-between px-2 py-4 border-t">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">
+            Mostrando {startItem} a {endItem} de {totalElements} resultados
+          </span>
+        </div>
+
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Itens por página:</span>
+            <Select value={String(size)} onValueChange={(val) => onSizeChange(Number(val))}>
+              <SelectTrigger className="w-[70px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[var(--cinza-200)]">
+                <SelectItem value="5">5</SelectItem>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(page - 1)}
+              disabled={page === 0}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            <span className="text-sm">
+              Página {page + 1} de {totalPages || 1}
+            </span>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(page + 1)}
+              disabled={page >= totalPages - 1}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <main className="min-h-screen w-screen max-w-none">
@@ -304,7 +406,7 @@ export default function Historico() {
 
                 <div className="flex flex-col gap-2 w-[240px]">
                   <Label htmlFor="status-a" className="px-1">Status</Label>
-                  <Select value={statusA} onValueChange={setStatusA}>
+                  <Select value={statusA} onValueChange={(val) => { setStatusA(val); setPageA(0); }}>
                     <SelectTrigger id="status-a" className="w-[240px]">
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
@@ -339,11 +441,11 @@ export default function Historico() {
                         mode="single"
                         selected={dateA}
                         captionLayout="dropdown"
-                        onSelect={(d) => { setDateA(d); setOpenA(false); }}
+                        onSelect={(d) => { setDateA(d); setOpenA(false); setPageA(0); }}
                         locale={ptBR}
                       />
                       <div className="flex justify-end gap-2 p-2 border-t">
-                        <Button variant="ghost" onClick={() => { setDateA(undefined); setOpenA(false); }}>
+                        <Button variant="ghost" onClick={() => { setDateA(undefined); setOpenA(false); setPageA(0); }}>
                           Limpar data
                         </Button>
                       </div>
@@ -352,8 +454,8 @@ export default function Historico() {
                 </div>
               </div>
 
-              <div className="overflow-auto max-h-[60vh] pr-2 pb-10">
-                <Table className="w-full mb-10">
+              <div className="overflow-auto max-h-[60vh] border rounded-lg">
+                <Table className="w-full">
                   <TableHeader>
                     <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
                       <TableHead>Nome</TableHead>
@@ -369,7 +471,7 @@ export default function Historico() {
                     {loading ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center">
-                          <div className="flex flex-col items-center justify-center">
+                          <div className="flex flex-col items-center justify-center py-8">
                             <Spinner />
                             <p className="mt-2">Carregando...</p>
                           </div>
@@ -377,7 +479,7 @@ export default function Historico() {
                       </TableRow>
                     ) : linhasAFiltered.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center">Nenhum agendamento encontrado</TableCell>
+                        <TableCell colSpan={7} className="text-center py-8">Nenhum agendamento encontrado</TableCell>
                       </TableRow>
                     ) : (
                       linhasAFiltered.map((a) => (
@@ -438,9 +540,16 @@ export default function Historico() {
                       ))
                     )}
                   </TableBody>
-                  <TableFooter />
                 </Table>
-                <div className="h-8" />
+
+                <PaginationControls
+                  page={pageA}
+                  totalPages={totalPagesA}
+                  totalElements={totalElementsA}
+                  size={sizeA}
+                  onPageChange={setPageA}
+                  onSizeChange={(newSize) => { setSizeA(newSize); setPageA(0); }}
+                />
               </div>
             </div>
           )}
@@ -467,7 +576,7 @@ export default function Historico() {
 
                 <div className="flex flex-col gap-2 w-[240px]">
                   <Label htmlFor="status-b" className="px-1">Status</Label>
-                  <Select value={statusB} onValueChange={setStatusB}>
+                  <Select value={statusB} onValueChange={(val) => { setStatusB(val); setPageB(0); }}>
                     <SelectTrigger id="status-b" className="w-[240px]">
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
@@ -502,11 +611,11 @@ export default function Historico() {
                         mode="single"
                         selected={dateB}
                         captionLayout="dropdown"
-                        onSelect={(d) => { setDateB(d); setOpenB(false); }}
+                        onSelect={(d) => { setDateB(d); setOpenB(false); setPageB(0); }}
                         locale={ptBR}
                       />
                       <div className="flex justify-end gap-2 p-2 border-t">
-                        <Button variant="ghost" onClick={() => { setDateB(undefined); setOpenB(false); }}>
+                        <Button variant="ghost" onClick={() => { setDateB(undefined); setOpenB(false); setPageB(0); }}>
                           Limpar data
                         </Button>
                       </div>
@@ -515,8 +624,8 @@ export default function Historico() {
                 </div>
               </div>
 
-              <div className="overflow-auto max-h-[60vh] pr-2 pb-10">
-                <Table className="w-full mb-10">
+              <div className="overflow-auto max-h-[60vh] border rounded-lg">
+                <Table className="w-full">
                   <TableHeader>
                     <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
                       <TableHead>Nome</TableHead>
@@ -531,11 +640,16 @@ export default function Historico() {
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center">Carregando solicitações...</TableCell>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          <div className="flex flex-col items-center justify-center">
+                            <Spinner />
+                            <p className="mt-2">Carregando...</p>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ) : linhasBFiltered.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center">Nenhuma solicitação encontrada</TableCell>
+                        <TableCell colSpan={6} className="text-center py-8">Nenhuma solicitação encontrada</TableCell>
                       </TableRow>
                     ) : (
                       linhasBFiltered.map((s) => (
@@ -565,7 +679,15 @@ export default function Historico() {
                     )}
                   </TableBody>
                 </Table>
-                <div className="h-8" />
+
+                <PaginationControls
+                  page={pageB}
+                  totalPages={totalPagesB}
+                  totalElements={totalElementsB}
+                  size={sizeB}
+                  onPageChange={setPageB}
+                  onSizeChange={(newSize) => { setSizeB(newSize); setPageB(0); }}
+                />
               </div>
             </div>
           )}
