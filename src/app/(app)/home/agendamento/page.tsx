@@ -7,11 +7,11 @@ import { toast } from "sonner";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { format, startOfMonth, endOfMonth, addDays } from "date-fns";
+import { format, startOfMonth, endOfMonth, addDays, set } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import type { Agendamento as AgendamentoType } from "@/types/index";
-import { CalendarDays, CalendarIcon, X, Check } from "lucide-react";
+import { CalendarDays, CalendarIcon, X, Check, FileSignatureIcon } from "lucide-react";
 import {
   Dialog, DialogClose, DialogContent, DialogDescription,
   DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
@@ -34,6 +34,8 @@ export default function Agendamento() {
   const [filteredAgendamentos, setFilteredAgendamentos] = useState<AgendamentoType[]>([]);
   const [agendamentoSelecionado, setAgendamentoSelecionado] = useState<AgendamentoType | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isCancelLoading, setIsCancelLoading] = useState(false);
+  const [isFaltaLoading, setIsFaltaLoading] = useState(false);
   const [slots, setSlots] = useState<SlotDisponibilidade[]>([]);
   const [carregandoSlots, setCarregandoSlots] = useState(false);
   const [slotSelecionadoISO, setSlotSelecionadoISO] = useState<string | null>(null);
@@ -333,6 +335,82 @@ export default function Agendamento() {
       .map(iso => new Date(iso + 'T00:00:00'));
   }, [availableDaysThisMonth]);
 
+  const handleCancelar = async () => {
+    if (!agendamentoSelecionado) return;
+
+    setIsCancelLoading(true);
+
+    try {
+      const resCancelar = await fetch(
+        `${api}/agendamento/${agendamentoSelecionado.idAgendamento}/status`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+          body: JSON.stringify({ status: 'CANCELADO' }),
+        }
+      );
+
+
+      if (!resCancelar.ok) {
+        setIsCancelLoading(false);
+        const errorText = await resCancelar.text().catch(() => "");
+        throw new Error(`Falha ao cancelar: ${errorText || resCancelar.status}`);
+
+      }
+
+      setAgendamentos(prev => prev.filter(a => a.idAgendamento !== agendamentoSelecionado.idAgendamento));
+      setFilteredAgendamentos(prev => prev.filter(a => a.idAgendamento !== agendamentoSelecionado.idAgendamento));
+      setAgendamentoSelecionado(null);
+      setModo("detalhe");
+      toast.success("Agendamento cancelado com sucesso!");
+      setIsCancelLoading(false);
+
+
+    } catch {
+      toast.error("Não foi possível cancelar o agendamento.");
+      setIsCancelLoading(false);
+      return;
+    }
+  }
+
+
+  const handleMarcarFalta = async () => {
+    if (!agendamentoSelecionado) return;
+
+    setIsFaltaLoading(true);
+
+    try {
+      const res = await fetch(
+        `${api}/agendamento/${agendamentoSelecionado.idAgendamento}/status`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+          body: JSON.stringify({ status: 'FALTOU' }),
+        }
+      );
+
+
+      if (!res.ok) {
+        setIsFaltaLoading(false);
+        const errorText = await res.text().catch(() => "");
+        throw new Error(`Falha ao marcar falta: ${errorText || res.status}`);
+
+      }
+
+      setAgendamentos(prev => prev.filter(a => a.idAgendamento !== agendamentoSelecionado.idAgendamento));
+      setFilteredAgendamentos(prev => prev.filter(a => a.idAgendamento !== agendamentoSelecionado.idAgendamento));
+      setAgendamentoSelecionado(null);
+      setModo("detalhe");
+      toast.success("Falta marcada com sucesso!");
+      setIsFaltaLoading(false);
+    } catch {
+      toast.error("Não foi possível marcar a falta.");
+      setIsFaltaLoading(false);
+      return;
+    }
+
+  }
+
   return (
     <main className="min-h-screen w-screen max-w-none">
       <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
@@ -448,17 +526,39 @@ export default function Agendamento() {
                                   </div>
                                 </div>
 
-                                <DialogFooter className="mt-6 text-[var(--branco)]">
-                                  <Button
-                                    onClick={() => setModo("remarcar")}
-                                    className="gap-2 bg-[var(--verde-900)]"
-                                    variant="secondary"
-                                  >
-                                    <CalendarIcon size={18} className="text-[var(--branco)]" />
-                                    Remarcar
-                                  </Button>
+                                <DialogFooter className="mt-6 text-[var(--branco)] flex flex-row justify-between sm:justify-between">
+                                  <div className="space-x-4">
+                                    <Button
+                                      onClick={() => setModo("remarcar")}
+                                      className="gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80 cursor-pointer"
+                                      variant="secondary"
+                                    >
+                                      <CalendarIcon size={18} className="text-[var(--branco)]" />
+                                      Remarcar
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleMarcarFalta()}
+                                      className="gap-2 bg-[var(--warning)] hover:bg-[var(--warning)]/80 cursor-pointer"
+                                      variant="secondary"
+                                      disabled={isCancelLoading}
+                                    >
+                                      {isFaltaLoading ? <Spinner /> : <FileSignatureIcon size={18} className="text-[var(--branco)]" />}
+
+                                      {isFaltaLoading ? "Marcando..." : "Marcar Falta"}
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleMarcarFalta()}
+                                      className="gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80 cursor-pointer"
+                                      variant="secondary"
+                                      disabled={isCancelLoading}
+                                    >
+                                      {isCancelLoading ? <Spinner /> : <X size={18} className="text-[var(--branco)]" />}
+
+                                      {isCancelLoading ? "Cancelando..." : "Cancelar"}
+                                    </Button>
+                                  </div>
                                   <DialogClose asChild className="text-[var(--branco)]">
-                                    <Button variant="outline" className="gap-2 bg-[var(--verde-900)]">
+                                    <Button variant="outline" className="gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80 cursor-pointer">
                                       <X size={18} className="text-[var(--branco)]" />
                                       Fechar
                                     </Button>
@@ -600,32 +700,32 @@ export default function Agendamento() {
                                     <X size={18} />
                                     Cancelar
                                   </Button>
-                                 <Button
-                                      className="gap-2 text-[var(--branco)] bg-[var(--verde-900)] disabled:opacity-60 justify-center min-w-[150px]"
-                                      onClick={async () => {
-                                        if (!slotSelecionadoISO || confirming) return;
-                                        setConfirming(true);
-                                        try {
-                                          await confirmarRemarcacao();  
-                                        } finally {
-                                          setConfirming(false);
-                                        }
-                                      }}
-                                      disabled={!slotSelecionadoISO || confirming}
-                                      aria-busy={confirming}
-                                    >
-                                      {confirming ? (
-                                        <>
-                                          <Spinner />
-                                          Remarcando…
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Check size={18} />
-                                          Confirmar
-                                        </>
-                                      )}
-                                    </Button>
+                                  <Button
+                                    className="gap-2 text-[var(--branco)] bg-[var(--verde-900)] disabled:opacity-60 justify-center min-w-[150px]"
+                                    onClick={async () => {
+                                      if (!slotSelecionadoISO || confirming) return;
+                                      setConfirming(true);
+                                      try {
+                                        await confirmarRemarcacao();
+                                      } finally {
+                                        setConfirming(false);
+                                      }
+                                    }}
+                                    disabled={!slotSelecionadoISO || confirming}
+                                    aria-busy={confirming}
+                                  >
+                                    {confirming ? (
+                                      <>
+                                        <Spinner />
+                                        Remarcando…
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Check size={18} />
+                                        Confirmar
+                                      </>
+                                    )}
+                                  </Button>
 
                                 </DialogFooter>
                               </>
