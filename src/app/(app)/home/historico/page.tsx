@@ -5,13 +5,10 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getAuthHeader } from "@/app/api/lib/authHeader";
 import { toast } from "sonner";
-import type { Agendamento, Solicitacao } from "@/types";
-import { ChevronDownIcon, History, Search, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import type { Agendamento, Solicitacao, Colaborador } from "@/types";
+import { History, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
@@ -36,31 +33,46 @@ export default function Historico() {
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const [searchA, setSearchA] = useState("");
+  // States para Agendamentos
+  const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
+  const [colaboradorId, setColaboradorId] = useState<string>("__all__");
   const [statusA, setStatusA] = useState<string>("__all__");
-  const [openA, setOpenA] = useState(false);
-  const [dateA, setDateA] = useState<Date | undefined>(undefined);
   const [pageA, setPageA] = useState(0);
   const [sizeA, setSizeA] = useState(10);
   const [totalPagesA, setTotalPagesA] = useState(0);
   const [totalElementsA, setTotalElementsA] = useState(0);
 
-  const [searchB, setSearchB] = useState("");
+  // States para Benefícios
+  const [colaboradorIdB, setColaboradorIdB] = useState<string>("__all__");
   const [statusB, setStatusB] = useState<string>("__all__");
-  const [openB, setOpenB] = useState(false);
-  const [dateB, setDateB] = useState<Date | undefined>(undefined);
   const [pageB, setPageB] = useState(0);
   const [sizeB, setSizeB] = useState(10);
   const [totalPagesB, setTotalPagesB] = useState(0);
   const [totalElementsB, setTotalElementsB] = useState(0);
 
   useEffect(() => {
+    buscarColaboradores();
+  }, []);
+
+  useEffect(() => {
     buscarAgendamentos();
-  }, [pageA, sizeA, statusA, dateA]);
+  }, [pageA, sizeA, statusA, colaboradorId]);
 
   useEffect(() => {
     buscarSolicitacoes();
-  }, [pageB, sizeB, statusB, dateB]);
+  }, [pageB, sizeB, statusB, colaboradorIdB]);
+
+  async function buscarColaboradores() {
+    try {
+      const res = await fetch(`${api}/colaborador`, { headers: getAuthHeader() });
+      if (!res.ok) throw new Error("Erro ao carregar colaboradores");
+      const data = await res.json();
+      setColaboradores(data.data || []);
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível carregar os colaboradores");
+    }
+  }
 
   async function buscarAgendamentos() {
     setLoading(true);
@@ -73,9 +85,8 @@ export default function Historico() {
         params.set('status', statusA);
       }
 
-      if (dateA) {
-        const dateStr = format(dateA, 'yyyy-MM-dd');
-        params.set('data', dateStr);
+      if (colaboradorId !== "__all__") {
+        params.set('colaboradorId', colaboradorId);
       }
 
       const queryString = params.toString();
@@ -105,9 +116,8 @@ export default function Historico() {
         params.set('status', statusB);
       }
 
-      if (dateB) {
-        const dateStr = format(dateB, 'yyyy-MM-dd');
-        params.set('data', dateStr);
+      if (colaboradorIdB !== "__all__") {
+        params.set('colaboradorId', colaboradorIdB);
       }
 
       const queryString = params.toString();
@@ -200,20 +210,7 @@ export default function Historico() {
     });
   }, [agendamentos]);
 
-  const statusOptionsA = useMemo(() => {
-    const set = new Set<string>();
-    for (const a of agendamentos) if (a.status) set.add(a.status);
-    return Array.from(set);
-  }, [agendamentos]);
 
-  const linhasAFiltered = useMemo(() => {
-    if (!searchA.trim()) return linhasA;
-
-    return linhasA.filter((a) => {
-      const matchNome = a.paciente.toLowerCase().includes(searchA.trim().toLowerCase());
-      return matchNome;
-    });
-  }, [linhasA, searchA]);
 
   const linhasB = useMemo(() => {
     const toBRL = (n?: number) =>
@@ -268,15 +265,6 @@ export default function Historico() {
     for (const s of solicitacoes) if (s.status) set.add(s.status);
     return Array.from(set);
   }, [solicitacoes]);
-
-  const linhasBFiltered = useMemo(() => {
-    if (!searchB.trim()) return linhasB;
-
-    return linhasB.filter((s) => {
-      const matchNome = s.paciente.toLowerCase().includes(searchB.trim().toLowerCase());
-      return matchNome;
-    });
-  }, [linhasB, searchB]);
 
   const PaginationControls = ({
     page,
@@ -385,112 +373,161 @@ export default function Historico() {
           </div>
 
           {selectedTab === "agendamento" && (
-            <div className="overflow-auto max-h-[60vh] border rounded-lg">
-              <Table className="w-full relative">
+            <div className="mt-4 w-full">
+              <div className="flex items-end gap-4 w-full max-w-6xl mb-4 flex-wrap">
+                <div className="flex flex-col gap-2 w-[320px]">
+                  <Label htmlFor="colaborador-a" className="px-1">Colaborador</Label>
+                  <Select value={colaboradorId} onValueChange={(val) => { setColaboradorId(val); setPageA(0); }}>
+                    <SelectTrigger id="colaborador-a" className="w-[320px]">
+                      <SelectValue placeholder="Selecione o colaborador" />
+                    </SelectTrigger>
+                    <SelectContent className="w-[320px] bg-[var(--cinza-200)]">
+                      <SelectGroup>
+                        <SelectLabel>Todos</SelectLabel>
+                        <SelectItem value="__all__">Todos os colaboradores</SelectItem>
+                      </SelectGroup>
+                      {colaboradores.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel>Colaboradores</SelectLabel>
+                          {colaboradores.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.nome} - {c.matricula}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
 
+                <div className="flex flex-col gap-2 w-[240px]">
+                  <Label htmlFor="status-a" className="px-1">Status</Label>
+                  <Select value={statusA} onValueChange={(val) => { setStatusA(val); setPageA(0); }}>
+                    <SelectTrigger id="status-a" className="w-[240px]">
+                      <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                    <SelectContent className="w-[240px] bg-[var(--cinza-200)]">
+                      <SelectGroup>
+                        <SelectLabel>Todos</SelectLabel>
+                        <SelectItem value="__all__">Todos</SelectItem>
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel>Status</SelectLabel>
+                        <SelectItem value="AGENDADO">AGENDADO</SelectItem>
+                        <SelectItem value="CANCELADO">CANCELADO</SelectItem>
+                        <SelectItem value="CONCLUIDO">CONCLUIDO</SelectItem>
+                        <SelectItem value="FALTOU">FALTOU</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-                <TableHeader className="sticky top-0 z-10">
-                  <TableRow className="bg-[var(--verde-800)] text-[var(--branco)] hover:bg-[var(--verde-800)]">
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Médico</TableHead>
-                    <TableHead>Especialidade</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Horário</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-center">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody>
-                  {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center">
-                        <div className="flex flex-col items-center justify-center py-8">
-                          <Spinner />
-                          <p className="mt-2">Carregando...</p>
-                        </div>
-                      </TableCell>
+              <div className="overflow-auto max-h-[60vh] border rounded-lg">
+                <Table className="w-full relative">
+                  <TableHeader className="sticky top-0 z-10">
+                    <TableRow className="bg-[var(--verde-800)] text-[var(--branco)] hover:bg-[var(--verde-800)]">
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Médico</TableHead>
+                      <TableHead>Especialidade</TableHead>
+                      <TableHead>Data</TableHead>
+                      <TableHead>Horário</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-center">Ações</TableHead>
                     </TableRow>
-                  ) : linhasAFiltered.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8">Nenhum agendamento encontrado</TableCell>
-                    </TableRow>
-                  ) : (
-                    linhasAFiltered.map((a, index) => (
-                      <TableRow key={a.idAgendamento} className={index % 2 === 1 ? "bg-[#DDE9E6]" : ""}>
-                        <TableCell className="p-4">{a.paciente}</TableCell>
-                        <TableCell>{a.medicoNome}</TableCell>
-                        <TableCell>{a.especialidadeNome}</TableCell>
-                        <TableCell>{a.dataFmt}</TableCell>
-                        <TableCell>{a.horaFmt}</TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              `font-semibold border-2 rounded-full  ${a.status === "CONCLUIDO"
-                                ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] "
-                                : a.status === "AGENDADO"
-                                  ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
-                                  : a.status === "FALTOU" || a.status === "CANCELADO"
-                                    ? "bg-[var(--erro-800)] text-[var(--cinza-700)]"
-                                    : "bg-gray-100 text-[var(--cinza-700)]"
-                              }`
-                            }
-                          >
-                            {a.status.replace("_", " ")}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                disabled={actionLoading === a.idAgendamento || a.status === "FALTOU" || a.status === "CANCELADO"}
-                              >
-                                {actionLoading === a.idAgendamento ? (
-                                  <Spinner className="h-4 w-4" />
-                                ) : (
-                                  <MoreVertical className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-[var(--cinza-200)]">
-                              <DropdownMenuItem
-                                onClick={() => handleMarcarFalta(a.idAgendamento)}
-                                className="cursor-pointer"
-                              >
-                                Marcar falta
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleCancelar(a.idAgendamento)}
-                                className="cursor-pointer text-red-600 focus:text-red-600"
-                              >
-                                Cancelar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                  </TableHeader>
+
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center">
+                          <div className="flex flex-col items-center justify-center py-8">
+                            <Spinner />
+                            <p className="mt-2">Carregando...</p>
+                          </div>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : linhasA.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">Nenhum agendamento encontrado</TableCell>
+                      </TableRow>
+                    ) : (
+                      linhasA.map((a, index) => (
+                        <TableRow key={a.idAgendamento} className={index % 2 === 1 ? "bg-[#DDE9E6]" : ""}>
+                          <TableCell className="p-4">{a.paciente}</TableCell>
+                          <TableCell>{a.medicoNome}</TableCell>
+                          <TableCell>{a.especialidadeNome}</TableCell>
+                          <TableCell>{a.dataFmt}</TableCell>
+                          <TableCell>{a.horaFmt}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                `font-semibold border-2 rounded-full  ${a.status === "CONCLUIDO"
+                                  ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] "
+                                  : a.status === "AGENDADO"
+                                    ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
+                                    : a.status === "FALTOU" || a.status === "CANCELADO"
+                                      ? "bg-[var(--erro-800)] text-[var(--cinza-700)]"
+                                      : "bg-gray-100 text-[var(--cinza-700)]"
+                                }`
+                              }
+                            >
+                              {a.status.replace("_", " ")}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  disabled={actionLoading === a.idAgendamento || a.status === "FALTOU" || a.status === "CANCELADO"}
+                                >
+                                  {actionLoading === a.idAgendamento ? (
+                                    <Spinner className="h-4 w-4" />
+                                  ) : (
+                                    <MoreVertical className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-[var(--cinza-200)]">
+                                <DropdownMenuItem
+                                  onClick={() => handleMarcarFalta(a.idAgendamento)}
+                                  className="cursor-pointer"
+                                >
+                                  Marcar falta
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleCancelar(a.idAgendamento)}
+                                  className="cursor-pointer text-red-600 focus:text-red-600"
+                                >
+                                  Cancelar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
 
-              {/* Rodapé Fixo
+                {/* Rodapé Fixo
           Alterado de 'sticky top-0' para 'sticky bottom-0'.
           Adicionado 'bg-[var(--cinza-200)]' (ou use 'bg-white') e 'border-t' 
           para que o conteúdo da tabela não apareça por baixo.
         */}
-              <div className="sticky bottom-0 z-10 bg-[var(--cinza-200)]">
-                <PaginationControls
-                  page={pageA}
-                  totalPages={totalPagesA}
-                  totalElements={totalElementsA}
-                  size={sizeA}
-                  onPageChange={setPageA}
-                  onSizeChange={(newSize) => { setSizeA(newSize); setPageA(0); }}
-                />
+                <div className="sticky bottom-0 z-10 bg-[var(--cinza-200)]">
+                  <PaginationControls
+                    page={pageA}
+                    totalPages={totalPagesA}
+                    totalElements={totalElementsA}
+                    size={sizeA}
+                    onPageChange={setPageA}
+                    onSizeChange={(newSize) => { setSizeA(newSize); setPageA(0); }}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -499,20 +536,28 @@ export default function Historico() {
             <div className="mt-4 w-full">
               <div className="flex items-end gap-4 w-full max-w-6xl mb-4 flex-wrap">
                 <div className="flex flex-col gap-2 w-[320px]">
-                  <Label htmlFor="nome-b" className="px-1">Beneficiado</Label>
-                  <form className="flex" onSubmit={(e) => e.preventDefault()}>
-                    <Input
-                      id="nome-b"
-                      type="text"
-                      placeholder="Pesquise o beneficiado"
-                      value={searchB}
-                      onChange={(e) => setSearchB(e.target.value)}
-                      className="flex-1 min-w-0 rounded-r-none"
-                    />
-                    <Button type="submit" className="flex-none rounded-l-none bg-[var(--verde-800)] hover:bg-[var(--verde-900)]">
-                      <Search className="h-4 w-4 text-[var(--branco)]" />
-                    </Button>
-                  </form>
+                  <Label htmlFor="colaborador-b" className="px-1">Colaborador</Label>
+                  <Select value={colaboradorIdB} onValueChange={(val) => { setColaboradorIdB(val); setPageB(0); }}>
+                    <SelectTrigger id="colaborador-b" className="w-[320px]">
+                      <SelectValue placeholder="Selecione o colaborador" />
+                    </SelectTrigger>
+                    <SelectContent className="w-[320px] bg-[var(--cinza-200)]">
+                      <SelectGroup>
+                        <SelectLabel>Todos</SelectLabel>
+                        <SelectItem value="__all__">Todos os colaboradores</SelectItem>
+                      </SelectGroup>
+                      {colaboradores.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel>Colaboradores</SelectLabel>
+                          {colaboradores.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.nome} - {c.matricula}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex flex-col gap-2 w-[240px]">
@@ -536,32 +581,6 @@ export default function Historico() {
                       )}
                     </SelectContent>
                   </Select>
-                </div>
-
-                <div className="flex flex-col gap-2 w-[260px]">
-                  <Label htmlFor="date-b" className="px-1">Data</Label>
-                  <Popover open={openB} onOpenChange={setOpenB}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" id="date-b" className="w-[260px] justify-between font-normal">
-                        {dateB ? format(dateB, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
-                        <ChevronDownIcon className="ml-2 h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto overflow-hidden p-0 bg-[var(--cinza-200)]" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={dateB}
-                        captionLayout="dropdown"
-                        onSelect={(d) => { setDateB(d); setOpenB(false); setPageB(0); }}
-                        locale={ptBR}
-                      />
-                      <div className="flex justify-end gap-2 p-2 border-t">
-                        <Button variant="ghost" onClick={() => { setDateB(undefined); setOpenB(false); setPageB(0); }}>
-                          Limpar data
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
                 </div>
               </div>
 
@@ -588,12 +607,12 @@ export default function Historico() {
                           </div>
                         </TableCell>
                       </TableRow>
-                    ) : linhasBFiltered.length === 0 ? (
+                    ) : linhasB.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8">Nenhuma solicitação encontrada</TableCell>
                       </TableRow>
                     ) : (
-                      linhasBFiltered.map((s, index) => (
+                      linhasB.map((s, index) => (
                         <TableRow key={s.id} className={index % 2 === 1 ? "bg-[#DDE9E6]" : ""}>
                           <TableCell className="p-4">{s.paciente}</TableCell>
                           <TableCell>{s.tipoPagamento}</TableCell>
