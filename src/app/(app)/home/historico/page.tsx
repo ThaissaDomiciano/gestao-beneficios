@@ -385,163 +385,104 @@ export default function Historico() {
           </div>
 
           {selectedTab === "agendamento" && (
-            <div className="mt-4 w-full">
-              <div className="flex items-end gap-4 w-full max-w-6xl mb-4 flex-wrap">
-                <div className="flex flex-col gap-2 w-[320px]">
-                  <Label htmlFor="nome-a" className="px-1">Nome do colaborador</Label>
-                  <form className="flex" onSubmit={(e) => e.preventDefault()}>
-                    <Input
-                      id="nome-a"
-                      type="text"
-                      placeholder="Pesquise o nome"
-                      value={searchA}
-                      onChange={(e) => setSearchA(e.target.value)}
-                      className="flex-1 min-w-0 rounded-r-none"
-                    />
-                    <Button type="submit" className="flex-none rounded-l-none bg-[var(--verde-800)] hover:bg-[var(--verde-900)]">
-                      <Search className="h-4 w-4 text-[var(--branco)]" />
-                    </Button>
-                  </form>
-                </div>
+            <div className="overflow-auto max-h-[60vh] border rounded-lg">
+              <Table className="w-full relative">
 
-                <div className="flex flex-col gap-2 w-[240px]">
-                  <Label htmlFor="status-a" className="px-1">Status</Label>
-                  <Select value={statusA} onValueChange={(val) => { setStatusA(val); setPageA(0); }}>
-                    <SelectTrigger id="status-a" className="w-[240px]">
-                      <SelectValue placeholder="Selecione o status" />
-                    </SelectTrigger>
-                    <SelectContent className="w-[240px] bg-[var(--cinza-200)]">
-                      <SelectGroup>
-                        <SelectLabel>Todos</SelectLabel>
-                        <SelectItem value="__all__">Todos</SelectItem>
-                      </SelectGroup>
-                      {statusOptionsA.length > 0 && (
-                        <SelectGroup>
-                          <SelectLabel>Disponíveis</SelectLabel>
-                          {statusOptionsA.map((s) => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
-                          ))}
-                        </SelectGroup>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
 
-                <div className="flex flex-col gap-2 w-[260px]">
-                  <Label htmlFor="date-a" className="px-1">Data</Label>
-                  <Popover open={openA} onOpenChange={setOpenA}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" id="date-a" className="w-[260px] justify-between font-normal">
-                        {dateA ? format(dateA, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
-                        <ChevronDownIcon className="ml-2 h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto overflow-hidden p-0 bg-[var(--cinza-200)]" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={dateA}
-                        captionLayout="dropdown"
-                        onSelect={(d) => { setDateA(d); setOpenA(false); setPageA(0); }}
-                        locale={ptBR}
-                      />
-                      <div className="flex justify-end gap-2 p-2 border-t">
-                        <Button variant="ghost" onClick={() => { setDateA(undefined); setOpenA(false); setPageA(0); }}>
-                          Limpar data
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
+                <TableHeader className="sticky top-0 z-10">
+                  <TableRow className="bg-[var(--verde-800)] text-[var(--branco)] hover:bg-[var(--verde-800)]">
+                    <TableHead>Nome</TableHead>
+                    <TableHead>Médico</TableHead>
+                    <TableHead>Especialidade</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Horário</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-center">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
 
-              <div className="overflow-auto max-h-[60vh] border rounded-lg">
-                <Table className="w-full">
-                  <TableHeader>
-                    <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Médico</TableHead>
-                      <TableHead>Especialidade</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Horário</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-center">Ações</TableHead>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center">
+                        <div className="flex flex-col items-center justify-center py-8">
+                          <Spinner />
+                          <p className="mt-2">Carregando...</p>
+                        </div>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {loading ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center">
-                          <div className="flex flex-col items-center justify-center py-8">
-                            <Spinner />
-                            <p className="mt-2">Carregando...</p>
-                          </div>
+                  ) : linhasAFiltered.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8">Nenhum agendamento encontrado</TableCell>
+                    </TableRow>
+                  ) : (
+                    linhasAFiltered.map((a, index) => (
+                      <TableRow key={a.idAgendamento} className={index % 2 === 1 ? "bg-[#DDE9E6]" : ""}>
+                        <TableCell className="p-4">{a.paciente}</TableCell>
+                        <TableCell>{a.medicoNome}</TableCell>
+                        <TableCell>{a.especialidadeNome}</TableCell>
+                        <TableCell>{a.dataFmt}</TableCell>
+                        <TableCell>{a.horaFmt}</TableCell>
+                        <TableCell>
+                          <Badge
+                            className={
+                              `font-semibold border-2 rounded-full  ${a.status === "CONCLUIDO"
+                                ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] "
+                                : a.status === "AGENDADO"
+                                  ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
+                                  : a.status === "FALTOU" || a.status === "CANCELADO"
+                                    ? "bg-[var(--erro-800)] text-[var(--cinza-700)]"
+                                    : "bg-gray-100 text-[var(--cinza-700)]"
+                              }`
+                            }
+                          >
+                            {a.status.replace("_", " ")}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                disabled={actionLoading === a.idAgendamento || a.status === "FALTOU" || a.status === "CANCELADO"}
+                              >
+                                {actionLoading === a.idAgendamento ? (
+                                  <Spinner className="h-4 w-4" />
+                                ) : (
+                                  <MoreVertical className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-[var(--cinza-200)]">
+                              <DropdownMenuItem
+                                onClick={() => handleMarcarFalta(a.idAgendamento)}
+                                className="cursor-pointer"
+                              >
+                                Marcar falta
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleCancelar(a.idAgendamento)}
+                                className="cursor-pointer text-red-600 focus:text-red-600"
+                              >
+                                Cancelar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
-                    ) : linhasAFiltered.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8">Nenhum agendamento encontrado</TableCell>
-                      </TableRow>
-                    ) : (
-                      linhasAFiltered.map((a) => (
-                        <TableRow key={a.idAgendamento}>
-                          <TableCell className="p-4">{a.paciente}</TableCell>
-                          <TableCell>{a.medicoNome}</TableCell>
-                          <TableCell>{a.especialidadeNome}</TableCell>
-                          <TableCell>{a.dataFmt}</TableCell>
-                          <TableCell>{a.horaFmt}</TableCell>
-                          <TableCell>
-                            <Badge
-                              className={
-                                `font-semibold border-2 rounded-full  ${a.status === "CONCLUIDO"
-                                  ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] "
-                                  : a.status === "AGENDADO"
-                                    ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
-                                    : a.status === "FALTOU" || a.status === "CANCELADO"
-                                      ? "bg-[var(--erro-800)] text-[var(--cinza-700)]"
-                                      : "bg-gray-100 text-[var(--cinza-700)]"
-                                }`}
-                            >
-                              {a.status.replace("_", " ")}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  disabled={actionLoading === a.idAgendamento || a.status === "FALTOU" || a.status === "CANCELADO"}
-                                >
-                                  {actionLoading === a.idAgendamento ? (
-                                    <Spinner className="h-4 w-4" />
-                                  ) : (
-                                    <MoreVertical className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-[var(--cinza-200)]">
-                                <DropdownMenuItem
-                                  onClick={() => handleMarcarFalta(a.idAgendamento)}
-                                  className="cursor-pointer"
-                                >
-                                  Marcar falta
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => handleCancelar(a.idAgendamento)}
-                                  className="cursor-pointer text-red-600 focus:text-red-600"
-                                >
-                                  Cancelar
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
 
+              {/* Rodapé Fixo
+          Alterado de 'sticky top-0' para 'sticky bottom-0'.
+          Adicionado 'bg-[var(--cinza-200)]' (ou use 'bg-white') e 'border-t' 
+          para que o conteúdo da tabela não apareça por baixo.
+        */}
+              <div className="sticky bottom-0 z-10 bg-[var(--cinza-200)]">
                 <PaginationControls
                   page={pageA}
                   totalPages={totalPagesA}
@@ -625,9 +566,9 @@ export default function Historico() {
               </div>
 
               <div className="overflow-auto max-h-[60vh] border rounded-lg">
-                <Table className="w-full">
-                  <TableHeader>
-                    <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
+                <Table className="w-full relative">
+                  <TableHeader className="sticky top-0 z-10">
+                    <TableRow className="bg-[var(--verde-800)] text-[var(--branco)] hover:bg-[var(--verde-800)]">
                       <TableHead>Nome</TableHead>
                       <TableHead>Tipo de Pagamento</TableHead>
                       <TableHead>Data</TableHead>
@@ -652,8 +593,8 @@ export default function Historico() {
                         <TableCell colSpan={6} className="text-center py-8">Nenhuma solicitação encontrada</TableCell>
                       </TableRow>
                     ) : (
-                      linhasBFiltered.map((s) => (
-                        <TableRow key={s.id}>
+                      linhasBFiltered.map((s, index) => (
+                        <TableRow key={s.id} className={index % 2 === 1 ? "bg-[#DDE9E6]" : ""}>
                           <TableCell className="p-4">{s.paciente}</TableCell>
                           <TableCell>{s.tipoPagamento}</TableCell>
                           <TableCell>{s.dataFmt}</TableCell>
@@ -680,19 +621,21 @@ export default function Historico() {
                   </TableBody>
                 </Table>
 
-                <PaginationControls
-                  page={pageB}
-                  totalPages={totalPagesB}
-                  totalElements={totalElementsB}
-                  size={sizeB}
-                  onPageChange={setPageB}
-                  onSizeChange={(newSize) => { setSizeB(newSize); setPageB(0); }}
-                />
+                <div className="sticky bottom-0 z-10 bg-[var(--cinza-200)]">
+                  <PaginationControls
+                    page={pageB}
+                    totalPages={totalPagesB}
+                    totalElements={totalElementsB}
+                    size={sizeB}
+                    onPageChange={setPageB}
+                    onSizeChange={(newSize) => { setSizeB(newSize); setPageB(0); }}
+                  />
+                </div>
               </div>
             </div>
           )}
         </div>
       </div>
-    </main>
+    </main >
   );
 }
