@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { format, startOfMonth, endOfMonth, addDays, set } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import type { Agendamento as AgendamentoType } from "@/types/index";
+import type { Agendamento as AgendamentoType, Colaborador } from "@/types/index";
 import { CalendarDays, CalendarIcon, X, Check, FileSignatureIcon } from "lucide-react";
 import {
   Dialog, DialogClose, DialogContent, DialogDescription,
@@ -18,6 +18,9 @@ import {
 } from "@/components/ui/dialog";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
+} from "@/components/ui/select";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -44,6 +47,11 @@ export default function Agendamento() {
   const monthAvailabilityCache = useRef<Map<string, Set<string>>>(new Map());
   const [availableDaysThisMonth, setAvailableDaysThisMonth] = useState<Set<string>>(new Set());
 
+  // Filtros
+  const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
+  const [colaboradorId, setColaboradorId] = useState<string>("__all__");
+  const [statusFilter, setStatusFilter] = useState<string>("AGENDADO");
+
   const toISODate = (d: Date) => format(d, 'yyyy-MM-dd');
   const monthKey = (d: Date) => format(d, 'yyyy-MM');
   const ddmmyyyyHHmm = (isoUTC: string) => format(new Date(isoUTC), "dd/MM/yyyy HH:mm", { locale: ptBR });
@@ -55,8 +63,12 @@ export default function Agendamento() {
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
-    buscarAgendamentos();
+    buscarColaboradores();
   }, []);
+
+  useEffect(() => {
+    buscarAgendamentos();
+  }, [colaboradorId, statusFilter]);
 
   useEffect(() => {
     if (!date) {
@@ -74,17 +86,41 @@ export default function Agendamento() {
     setFilteredAgendamentos(filtered);
   }, [date, agendamentos]);
 
+  async function buscarColaboradores() {
+    try {
+      const res = await fetch(`${api}/colaborador`, { headers: getAuthHeader() });
+      if (!res.ok) throw new Error("Erro ao carregar colaboradores");
+      const data = await res.json();
+      setColaboradores(data.data || []);
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível carregar os colaboradores");
+    }
+  }
+
   async function buscarAgendamentos() {
     setLoading(true);
     try {
-      const res = await fetch(`${api}/agendamento`, { headers: getAuthHeader() });
+      const params = new URLSearchParams();
+
+      if (statusFilter !== "__all__") {
+        params.set('status', statusFilter);
+      }
+
+      if (colaboradorId !== "__all__") {
+        params.set('colaboradorId', colaboradorId);
+      }
+
+      const queryString = params.toString();
+      const url = queryString ? `${api}/agendamento?${queryString}` : `${api}/agendamento`;
+
+      const res = await fetch(url, { headers: getAuthHeader() });
       if (!res.ok) throw new Error("Erro ao carregar agendamentos");
       const data = await res.json();
-      const apenasAgendados = (data.data || []).filter(
-        (agendamento: AgendamentoType) => agendamento.status === "AGENDADO"
-      );
-      setAgendamentos(apenasAgendados);
-      setFilteredAgendamentos(apenasAgendados);
+      const agendamentosData = data.data || [];
+
+      setAgendamentos(agendamentosData);
+      setFilteredAgendamentos(agendamentosData);
     } catch {
       toast.error("Não foi possível carregar os agendamentos");
     } finally {
@@ -424,6 +460,56 @@ export default function Agendamento() {
         </div>
 
         <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-12 shadow-sm">
+          {/* Filtros */}
+          <div className="flex items-end gap-4 w-full mb-6 flex-wrap">
+            <div className="flex flex-col gap-2 w-[320px]">
+              <Label htmlFor="colaborador-filter" className="px-1">Colaborador</Label>
+              <Select value={colaboradorId} onValueChange={(val) => setColaboradorId(val)}>
+                <SelectTrigger id="colaborador-filter" className="w-[320px]">
+                  <SelectValue placeholder="Selecione o colaborador" />
+                </SelectTrigger>
+                <SelectContent className="w-[320px] bg-[var(--cinza-200)]">
+                  <SelectGroup>
+                    <SelectLabel>Todos</SelectLabel>
+                    <SelectItem value="__all__">Todos os colaboradores</SelectItem>
+                  </SelectGroup>
+                  {colaboradores.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>Colaboradores</SelectLabel>
+                      {colaboradores.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.nome} - {c.matricula}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-2 w-[240px]">
+              <Label htmlFor="status-filter" className="px-1">Status</Label>
+              <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val)}>
+                <SelectTrigger id="status-filter" className="w-[240px]">
+                  <SelectValue placeholder="Selecione o status" />
+                </SelectTrigger>
+                <SelectContent className="w-[240px] bg-[var(--cinza-200)]">
+                  <SelectGroup>
+                    <SelectLabel>Todos</SelectLabel>
+                    <SelectItem value="__all__">Todos</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Status</SelectLabel>
+                    <SelectItem value="AGENDADO">AGENDADO</SelectItem>
+                    <SelectItem value="CANCELADO">CANCELADO</SelectItem>
+                    <SelectItem value="CONCLUIDO">CONCLUIDO</SelectItem>
+                    <SelectItem value="FALTOU">FALTOU</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Calendar
