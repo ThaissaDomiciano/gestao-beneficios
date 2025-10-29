@@ -3,36 +3,36 @@
 @import "tw-animate-css";
 
 :root {
-  --branco: #FFFFFF;
+  --branco: #ffffff;
   --preto: #000000;
 
-  --verde-900: #065F46;
+  --verde-900: #065f46;
   --verde-800: #047857;
   --verde-700: #059669;
-  --verde-600: #41AE8C;
-  --verde-500: #6EE7B7;
+  --verde-600: #41ae8c;
+  --verde-500: #6ee7b7;
 
-  --cinza-100: #F5F5F5;
-  --cinza-200: #F8F7F7;
-  --cinza-300: #EAEAEA;
-  --cinza-400: #B1B1B1;
+  --cinza-100: #f5f5f5;
+  --cinza-200: #f8f7f7;
+  --cinza-300: #eaeaea;
+  --cinza-400: #b1b1b1;
   --cinza-500: #616161;
-  --cinza-600: #3A3A3A;
-  --cinza-700: #2D2D2D;
+  --cinza-600: #3a3a3a;
+  --cinza-700: #2d2d2d;
   --cinza-800: #121212;
 
-  --amarelo-100: #FDFBEF;
-  --amarelo-200: #FFF9D4;
+  --amarelo-100: #fdfbef;
+  --amarelo-200: #fff9d4;
 
-  --background: #FFFEF6;
+  --background: #fffef6;
 
-  --error: #EF4444;
-  --warning: #FFCC00;
-  --success: #5C8F0E;
+  --error: #ef4444;
+  --warning: #ffcc00;
+  --success: #5c8f0e;
 
-  --alerta-800: #FFEA97;
-  --sucesso-800: #D6FA9E;
-  --erro-800: #FC6E6E;
+  --alerta-800: #ffea97;
+  --sucesso-800: #d6fa9e;
+  --erro-800: #fc6e6e;
 
   --font-roboto: "Roboto", sans-serif;
 

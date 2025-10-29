@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
+import { formatarTexto } from "@/_helpers/textFormat";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -354,7 +355,7 @@ export default function Historico() {
           <div className="flex gap-4">
             <button
               onClick={() => setSelectedTab("agendamento")}
-              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${selectedTab === "agendamento"
+              className={`rounded-md border px-4 py-2 font-medium transition mb-4 cursor-pointer ${selectedTab === "agendamento"
                 ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
                 : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
                 }`}
@@ -363,7 +364,7 @@ export default function Historico() {
             </button>
             <button
               onClick={() => setSelectedTab("beneficio")}
-              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${selectedTab === "beneficio"
+              className={`rounded-md border px-4 py-2 font-medium transition mb-4 cursor-pointer ${selectedTab === "beneficio"
                 ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
                 : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
                 }`}
@@ -423,7 +424,7 @@ export default function Historico() {
                 </div>
               </div>
 
-              <div className="overflow-auto max-h-[60vh] border rounded-lg">
+              <div className="overflow-auto max-h-[60vh] border-black border rounded-md [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
                 <Table className="w-full relative">
                   <TableHeader className="sticky top-0 z-10">
                     <TableRow className="bg-[var(--verde-800)] text-[var(--branco)] hover:bg-[var(--verde-800)]">
@@ -462,7 +463,7 @@ export default function Historico() {
                           <TableCell>
                             <Badge
                               className={
-                                `font-semibold border-2 rounded-full  ${a.status === "CONCLUIDO"
+                                `font-semibold border-2 rounded-full ${a.status === "CONCLUIDO"
                                   ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] "
                                   : a.status === "AGENDADO"
                                     ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
@@ -472,7 +473,7 @@ export default function Historico() {
                                 }`
                               }
                             >
-                              {a.status.replace("_", " ")}
+                              {formatarTexto(a.status)}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">
@@ -584,7 +585,7 @@ export default function Historico() {
                 </div>
               </div>
 
-              <div className="overflow-auto max-h-[60vh] border rounded-lg">
+              <div className="overflow-auto max-h-[60vh] border-black border rounded-md [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
                 <Table className="w-full relative">
                   <TableHeader className="sticky top-0 z-10">
                     <TableRow className="bg-[var(--verde-800)] text-[var(--branco)] hover:bg-[var(--verde-800)]">
@@ -615,23 +616,25 @@ export default function Historico() {
                       linhasB.map((s, index) => (
                         <TableRow key={s.id} className={index % 2 === 1 ? "bg-[#DDE9E6]" : ""}>
                           <TableCell className="p-4">{s.paciente}</TableCell>
-                          <TableCell>{s.tipoPagamento}</TableCell>
+                          <TableCell>{formatarTexto(s.tipoPagamento)}</TableCell>
                           <TableCell>{s.dataFmt}</TableCell>
                           <TableCell>{s.valorTotal}</TableCell>
                           <TableCell>{s.desconto}</TableCell>
                           <TableCell>
                             <Badge
                               className={
-                                s.status === "APROVADA"
-                                  ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                                `font-semibold border-2 rounded-full
+                                ${s.status === "APROVADA"
+                                  ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)]"
                                   : s.status === "REJEITADA" || s.status === "CANCELADA"
-                                    ? "bg-red-100 text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                                    ? "bg-red-100 text-[var(--cinza-700)]"
                                     : s.status === "PENDENTE" || s.status === "PENDENTE_ASSINATURA"
-                                      ? "bg-[var(--alerta-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
-                                      : "bg-gray-100 text-[var(--cinza-700)] border-2 border-black/50"
+                                      ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
+                                      : "bg-gray-100 text-[var(--cinza-700)]"
+                                }`
                               }
                             >
-                              {s.status.replace("_", " ")}
+                              {formatarTexto(s.status)}
                             </Badge>
                           </TableCell>
                         </TableRow>

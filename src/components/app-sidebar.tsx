@@ -72,20 +72,20 @@ function InnerSidebar() {
   useClickAway(ref, () => { if (open) setOpen(false) })
 
   useEffect(() => {
-  const fetchUsername = () => {
-    const token = localStorage.getItem("gb_token")
-    if (token) {
-      try {
-        const decoded = JSON.parse(decodeURIComponent(escape(atob(token.split(".")[1]))))
-        setUsername(decoded.nome || "Usuário")
-      } catch (error) {
-        console.error("Erro ao decodificar token:", error)
-        setUsername("Usuário")
+    const fetchUsername = () => {
+      const token = localStorage.getItem("gb_token")
+      if (token) {
+        try {
+          const decoded = JSON.parse(decodeURIComponent(escape(atob(token.split(".")[1]))))
+          setUsername(decoded.nome || "Usuário")
+        } catch (error) {
+          console.error("Erro ao decodificar token:", error)
+          setUsername("Usuário")
+        }
       }
     }
-  }
-  fetchUsername()
-}, [])
+    fetchUsername()
+  }, [])
 
   const handleOpenOnPointerDownCapture: React.PointerEventHandler<HTMLDivElement> = (e) => {
     if (!open) {
@@ -95,11 +95,11 @@ function InnerSidebar() {
     }
   }
 
- async function handleLogout() {
-  const STORAGE_KEY = "gb_token";
-  localStorage.removeItem(STORAGE_KEY);
-  router.replace("/login");
-}
+  async function handleLogout() {
+    const STORAGE_KEY = "gb_token";
+    localStorage.removeItem(STORAGE_KEY);
+    router.replace("/login");
+  }
 
   return (
     <>
@@ -125,8 +125,8 @@ function InnerSidebar() {
                       [&_[data-sidebar='footer']]:border-0"
         >
           <SidebarHeader>
-            <div className="gap-3 px-2 py-4">
-              <Image src="/logo.svg" alt="Logo" width={40} height={40} />
+            <div className="gap-3 ml-1 py-4">
+              <Image src="/logo.svg" alt="Logo" width={32} height={32} />
             </div>
           </SidebarHeader>
 
@@ -182,7 +182,7 @@ function InnerSidebar() {
               <SidebarMenuItem>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton className="bg-emerald-700">
+                    <SidebarMenuButton className="bg-emerald-700 text-nowrap">
                       <User2 /> {username}
                       <ChevronUp className="ml-auto" />
                     </SidebarMenuButton>
