@@ -448,8 +448,8 @@ export default function Agendamento() {
   }
 
   return (
-    <main className="min-h-screen w-screen max-w-none">
-      <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
+    <main className="">
+      <div className="">
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">

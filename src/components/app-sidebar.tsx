@@ -119,7 +119,7 @@ function InnerSidebar() {
       {/* Overlay escuro */}
       <div
         aria-hidden={!open}
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"
+        className={`fixed inset-0 z-40 bg-black/40 transition-opacity ${open ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         onClick={() => setOpen(false)}
       />

@@ -340,8 +340,8 @@ export default function Historico() {
   };
 
   return (
-    <main className="min-h-screen w-screen max-w-none">
-      <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
+    <main className="">
+      <div className="">
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
@@ -376,13 +376,13 @@ export default function Historico() {
           {selectedTab === "agendamento" && (
             <div className="mt-4 w-full">
               <div className="flex items-end gap-4 w-full max-w-6xl mb-4 flex-wrap">
-                <div className="flex flex-col gap-2 w-[320px]">
+                <div className="flex flex-col gap-2 max-w-[100px]">
                   <Label htmlFor="colaborador-a" className="px-1">Colaborador</Label>
                   <Select value={colaboradorId} onValueChange={(val) => { setColaboradorId(val); setPageA(0); }}>
                     <SelectTrigger id="colaborador-a" className="w-[320px]">
                       <SelectValue placeholder="Selecione o colaborador" />
                     </SelectTrigger>
-                    <SelectContent className="w-[320px] bg-[var(--cinza-200)]">
+                    <SelectContent className="max-w-[100px] bg-[var(--cinza-200)]">
                       <SelectGroup>
                         <SelectLabel>Todos</SelectLabel>
                         <SelectItem value="__all__">Todos os colaboradores</SelectItem>

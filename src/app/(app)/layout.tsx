@@ -21,13 +21,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     setAllowed(true);
   }, [router, pathname]);
 
-  if (!allowed) return null; 
+  if (!allowed) return null;
 
   return (
     <SidebarProvider defaultOpen={false}>
-      <div className="min-h-screen relative">
+      <div className="min-h-screen relative w-screen">
         <AppSidebar />
-        <main className="p-6">{children}</main>
+        <main className="min-h-screen max-w-[90vw] mx-auto pl-[52px] lg:pl-[78px] mt-6">{children}</main>
       </div>
     </SidebarProvider>
   );
