@@ -27,7 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen relative w-screen">
         <AppSidebar />
-        <main className="min-h-screen max-w-[90vw] mx-auto pl-[52px] lg:pl-[78px] mt-6">{children}</main>
+        <main className="max-w-[90vw] mx-auto pl-[52px] lg:pl-[78px] mt-6">{children}</main>
       </div>
     </SidebarProvider>
   );

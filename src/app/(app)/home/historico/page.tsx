@@ -286,15 +286,28 @@ export default function Historico() {
     const endItem = Math.min((page + 1) * size, totalElements);
 
     return (
-      <div className="flex items-center justify-between px-2 py-4 border-t">
+      <div
+        className="
+    flex flex-col md:flex-row md:items-center md:justify-between 
+    items-center gap-4 
+    px-2 py-4 border-t
+  "
+      >
+        {/* Em telas pequenas (mobile-first), o 'items-center' do pai 
+    já centraliza este bloco.
+  */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
             Mostrando {startItem} a {endItem} de {totalElements} resultados
           </span>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
+        {/* Este contêiner também "empilha" no mobile (flex-col) 
+    e vira linha um pouco antes (sm:flex-row)
+  */}
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+          {/* Bloco "Itens por página" */}
+          <div className="items-center gap-2 hidden sm:flex ">
             <span className="text-sm text-muted-foreground">Itens por página:</span>
             <Select value={String(size)} onValueChange={(val) => onSizeChange(Number(val))}>
               <SelectTrigger className="w-[70px]">
@@ -309,6 +322,7 @@ export default function Historico() {
             </Select>
           </div>
 
+          {/* Bloco de Navegação de Página */}
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -351,7 +365,7 @@ export default function Historico() {
           </div>
         </div>
 
-        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-4 md:p-8 shadow-sm">
+        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-4 md:p-8 shadow-sm max-h-[80vh] h-full flex flex-col">
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={() => setSelectedTab("agendamento")}
@@ -374,7 +388,7 @@ export default function Historico() {
           </div>
 
           {selectedTab === "agendamento" && (
-            <div className="mt-4 w-full">
+            <div className="mt-4 w-full flex-1 flex flex-col min-h-0">
               <div className="flex items-end gap-4 w-full mb-4 flex-wrap">
                 <div className="flex flex-col gap-2 w-full max-w-[320px] min-w-[160px]">
                   <Label htmlFor="colaborador-a" className="px-1">Colaborador</Label>
@@ -425,9 +439,9 @@ export default function Historico() {
               </div>
 
               {/* Cards para mobile/tablet */}
-              <div className="block lg:hidden space-y-4 max-h-[50vh] overflow-y-auto">
+              <div className="lg:hidden space-y-4 overflow-y-auto flex-1 overflow-x-hidden [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
                 {loading ? (
-                  <div className="flex flex-col items-center justify-center py-8">
+                  <div className="flex flex-col items-center justify-center py-8 ">
                     <Spinner />
                     <p className="mt-2">Carregando...</p>
                   </div>
@@ -539,14 +553,7 @@ export default function Historico() {
                   ))
                 )}
 
-                <PaginationControls
-                  page={pageA}
-                  totalPages={totalPagesA}
-                  totalElements={totalElementsA}
-                  size={sizeA}
-                  onPageChange={setPageA}
-                  onSizeChange={(newSize) => { setSizeA(newSize); setPageA(0); }}
-                />
+
               </div>
 
               {/* Tabela para desktop */}
@@ -640,24 +647,25 @@ export default function Historico() {
                   </TableBody>
                 </Table>
 
-                <div className="sticky bottom-0 z-10 bg-[var(--cinza-200)]">
-                  <PaginationControls
-                    page={pageA}
-                    totalPages={totalPagesA}
-                    totalElements={totalElementsA}
-                    size={sizeA}
-                    onPageChange={setPageA}
-                    onSizeChange={(newSize) => { setSizeA(newSize); setPageA(0); }}
-                  />
-                </div>
+
+              </div>
+              <div className="mt-2 z-10 bg-[var(--cinza-200)]">
+                <PaginationControls
+                  page={pageA}
+                  totalPages={totalPagesA}
+                  totalElements={totalElementsA}
+                  size={sizeA}
+                  onPageChange={setPageA}
+                  onSizeChange={(newSize) => { setSizeA(newSize); setPageA(0); }}
+                />
               </div>
             </div>
           )}
 
           {selectedTab === "beneficio" && (
-            <div className="mt-4 w-full">
+            <div className="mt-4 w-full flex-1 flex flex-col min-h-0">
               <div className="flex items-end gap-4 w-full mb-4 flex-wrap">
-                <div className="flex flex-col gap-2 max-w-[320px] min-w-[160px] w-full">
+                <div className="flex flex-col gap-2 w-full max-w-[320px] min-w-[160px]">
                   <Label htmlFor="colaborador-b" className="px-1">Colaborador</Label>
                   <Select value={colaboradorIdB} onValueChange={(val) => { setColaboradorIdB(val); setPageB(0); }}>
                     <SelectTrigger id="colaborador-b" className="w-full">
@@ -707,7 +715,7 @@ export default function Historico() {
               </div>
 
               {/* Cards para mobile/tablet */}
-              <div className="block lg:hidden space-y-4">
+              <div className="lg:hidden space-y-4 overflow-y-auto flex-1 overflow-x-hidden [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
                 {loading ? (
                   <div className="flex flex-col items-center justify-center py-8">
                     <Spinner />
@@ -782,14 +790,7 @@ export default function Historico() {
                   ))
                 )}
 
-                <PaginationControls
-                  page={pageB}
-                  totalPages={totalPagesB}
-                  totalElements={totalElementsB}
-                  size={sizeB}
-                  onPageChange={setPageB}
-                  onSizeChange={(newSize) => { setSizeB(newSize); setPageB(0); }}
-                />
+
               </div>
 
               {/* Tabela para desktop */}
@@ -851,21 +852,22 @@ export default function Historico() {
                   </TableBody>
                 </Table>
 
-                <div className="sticky bottom-0 z-10 bg-[var(--cinza-200)]">
-                  <PaginationControls
-                    page={pageB}
-                    totalPages={totalPagesB}
-                    totalElements={totalElementsB}
-                    size={sizeB}
-                    onPageChange={setPageB}
-                    onSizeChange={(newSize) => { setSizeB(newSize); setPageB(0); }}
-                  />
-                </div>
+
+              </div>
+              <div className="mt-2 z-10 bg-[var(--cinza-200)]">
+                <PaginationControls
+                  page={pageB}
+                  totalPages={totalPagesB}
+                  totalElements={totalElementsB}
+                  size={sizeB}
+                  onPageChange={setPageB}
+                  onSizeChange={(newSize) => { setSizeB(newSize); setPageB(0); }}
+                />
               </div>
             </div>
           )}
         </div>
       </div>
-    </main>
+    </main >
   );
 }
