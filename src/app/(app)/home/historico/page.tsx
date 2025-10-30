@@ -352,7 +352,7 @@ export default function Historico() {
         </div>
 
         <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-8 shadow-sm">
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={() => setSelectedTab("agendamento")}
               className={`rounded-md border px-4 py-2 font-medium transition mb-4 cursor-pointer ${selectedTab === "agendamento"
@@ -376,13 +376,13 @@ export default function Historico() {
           {selectedTab === "agendamento" && (
             <div className="mt-4 w-full">
               <div className="flex items-end gap-4 w-full max-w-6xl mb-4 flex-wrap">
-                <div className="flex flex-col gap-2 max-w-[100px]">
+                <div className="flex flex-col gap-2 w-full max-w-[320px] min-w-[160px]">
                   <Label htmlFor="colaborador-a" className="px-1">Colaborador</Label>
                   <Select value={colaboradorId} onValueChange={(val) => { setColaboradorId(val); setPageA(0); }}>
-                    <SelectTrigger id="colaborador-a" className="w-[320px]">
+                    <SelectTrigger id="colaborador-a" className="max-w-[320px] w-full min-w-[160px]">
                       <SelectValue placeholder="Selecione o colaborador" />
                     </SelectTrigger>
-                    <SelectContent className="max-w-[100px] bg-[var(--cinza-200)]">
+                    <SelectContent className=" bg-[var(--cinza-200)]">
                       <SelectGroup>
                         <SelectLabel>Todos</SelectLabel>
                         <SelectItem value="__all__">Todos os colaboradores</SelectItem>
@@ -401,13 +401,13 @@ export default function Historico() {
                   </Select>
                 </div>
 
-                <div className="flex flex-col gap-2 w-[240px]">
+                <div className="flex flex-col gap-2 max-w-[240px] w-full min-w-[120px]">
                   <Label htmlFor="status-a" className="px-1">Status</Label>
                   <Select value={statusA} onValueChange={(val) => { setStatusA(val); setPageA(0); }}>
-                    <SelectTrigger id="status-a" className="w-[240px]">
+                    <SelectTrigger id="status-a" className="max-w-[240px] min-w-[120px] w-full">
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
-                    <SelectContent className="w-[240px] bg-[var(--cinza-200)]">
+                    <SelectContent className="bg-[var(--cinza-200)]">
                       <SelectGroup>
                         <SelectLabel>Todos</SelectLabel>
                         <SelectItem value="__all__">Todos</SelectItem>
@@ -536,13 +536,13 @@ export default function Historico() {
           {selectedTab === "beneficio" && (
             <div className="mt-4 w-full">
               <div className="flex items-end gap-4 w-full max-w-6xl mb-4 flex-wrap">
-                <div className="flex flex-col gap-2 w-[320px]">
+                <div className="flex flex-col gap-2 max-w-[320px] min-w-[160px]  w-full">
                   <Label htmlFor="colaborador-b" className="px-1">Colaborador</Label>
                   <Select value={colaboradorIdB} onValueChange={(val) => { setColaboradorIdB(val); setPageB(0); }}>
-                    <SelectTrigger id="colaborador-b" className="w-[320px]">
+                    <SelectTrigger id="colaborador-b" className="max-w-[320px] w-full min-w-[160px]">
                       <SelectValue placeholder="Selecione o colaborador" />
                     </SelectTrigger>
-                    <SelectContent className="w-[320px] bg-[var(--cinza-200)]">
+                    <SelectContent className="  bg-[var(--cinza-200)]">
                       <SelectGroup>
                         <SelectLabel>Todos</SelectLabel>
                         <SelectItem value="__all__">Todos os colaboradores</SelectItem>
@@ -561,13 +561,13 @@ export default function Historico() {
                   </Select>
                 </div>
 
-                <div className="flex flex-col gap-2 w-[240px]">
+                <div className="flex flex-col gap-2 max-w-[240px] w-full min-w-[120px]">
                   <Label htmlFor="status-b" className="px-1">Status</Label>
                   <Select value={statusB} onValueChange={(val) => { setStatusB(val); setPageB(0); }}>
-                    <SelectTrigger id="status-b" className="w-[240px]">
+                    <SelectTrigger id="status-b" className="max-w-[240px] w-full min-w-[120px]">
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
-                    <SelectContent className="w-[240px] bg-[var(--cinza-200)]">
+                    <SelectContent className=" bg-[var(--cinza-200)]">
                       <SelectGroup>
                         <SelectLabel>Todos</SelectLabel>
                         <SelectItem value="__all__">Todos</SelectItem>
