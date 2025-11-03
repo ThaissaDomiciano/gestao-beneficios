@@ -129,8 +129,8 @@ export default function PesquisarColaborador() {
   }
 
   return (
-    <main className="min-h-screen w-screen max-w-none">
-      <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
+    <main className="">
+      <div className="">
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
@@ -249,8 +249,8 @@ export default function PesquisarColaborador() {
                                   }
                                 }}
                                 className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${selectedTab === "beneficios"
-                                    ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
-                                    : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                                  ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
+                                  : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
                                   }`}
                               >
                                 Benefícios
