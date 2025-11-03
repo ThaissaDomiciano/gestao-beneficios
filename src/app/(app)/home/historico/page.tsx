@@ -31,7 +31,7 @@ export default function Historico() {
   const [selectedTab, setSelectedTab] = useState<"agendamento" | "beneficio">("agendamento");
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loadingColaboradores, setLoadingColaboradores] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // States para Agendamentos
@@ -42,6 +42,8 @@ export default function Historico() {
   const [sizeA, setSizeA] = useState(10);
   const [totalPagesA, setTotalPagesA] = useState(0);
   const [totalElementsA, setTotalElementsA] = useState(0);
+  const [loadingAgendamentos, setLoadingAgendamentos] = useState(false);
+
 
   // States para Benefícios
   const [colaboradorIdB, setColaboradorIdB] = useState<string>("__all__");
@@ -50,6 +52,8 @@ export default function Historico() {
   const [sizeB, setSizeB] = useState(10);
   const [totalPagesB, setTotalPagesB] = useState(0);
   const [totalElementsB, setTotalElementsB] = useState(0);
+  const [loadingBeneficios, setLoadingBeneficios] = useState(false);
+
 
   useEffect(() => {
     buscarColaboradores();
@@ -65,6 +69,7 @@ export default function Historico() {
 
   async function buscarColaboradores() {
     try {
+      setLoadingColaboradores(true)
       const res = await fetch(`${api}/colaborador`, { headers: getAuthHeader() });
       if (!res.ok) throw new Error("Erro ao carregar colaboradores");
       const data = await res.json();
@@ -72,11 +77,13 @@ export default function Historico() {
     } catch (error) {
       console.error(error);
       toast.error("Não foi possível carregar os colaboradores");
+    }finally{
+      setLoadingColaboradores(false)
     }
   }
 
   async function buscarAgendamentos() {
-    setLoading(true);
+    setLoadingAgendamentos(true);
     try {
       const params = new URLSearchParams();
       params.set('page', String(pageA));
@@ -102,12 +109,12 @@ export default function Historico() {
       console.error(error);
       toast.error("Não foi possível carregar os agendamentos");
     } finally {
-      setLoading(false);
+      setLoadingAgendamentos(false);
     }
   }
 
   async function buscarSolicitacoes() {
-    setLoading(true);
+    setLoadingBeneficios(true);
     try {
       const params = new URLSearchParams();
       params.set('page', String(pageB));
@@ -133,7 +140,7 @@ export default function Historico() {
       console.error(error);
       toast.error("Não foi possível carregar as solicitações");
     } finally {
-      setLoading(false);
+      setLoadingBeneficios(false);
     }
   }
 
@@ -440,7 +447,7 @@ export default function Historico() {
 
               {/* Cards para mobile/tablet */}
               <div className="lg:hidden space-y-4 overflow-y-auto flex-1 overflow-x-hidden [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
-                {loading ? (
+                {loadingAgendamentos ? (
                   <div className="flex flex-col items-center justify-center py-8 ">
                     <Spinner />
                     <p className="mt-2">Carregando...</p>
@@ -572,7 +579,7 @@ export default function Historico() {
                   </TableHeader>
 
                   <TableBody>
-                    {loading ? (
+                    {loadingAgendamentos ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center">
                           <div className="flex flex-col items-center justify-center py-8">
@@ -716,7 +723,7 @@ export default function Historico() {
 
               {/* Cards para mobile/tablet */}
               <div className="lg:hidden space-y-4 overflow-y-auto flex-1 overflow-x-hidden [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
-                {loading ? (
+                {loadingBeneficios ? (
                   <div className="flex flex-col items-center justify-center py-8">
                     <Spinner />
                     <p className="mt-2">Carregando...</p>
@@ -776,7 +783,7 @@ export default function Historico() {
                                 ? "bg-green-500 text-white hover:bg-green-600"
                                 : s.status === "PENDENTE" || s.status === "PENDENTE_ASSINATURA"
                                   ? "bg-cyan-500 text-white hover:bg-cyan-600"
-                                  : s.status === "REJEITADA" || s.status === "CANCELADA"
+                                  : s.status === "RECUSADA" || s.status === "CANCELADA"
                                     ? "bg-red-500 text-white hover:bg-red-600"
                                     : "bg-gray-200 text-gray-700"
                               }`
@@ -808,7 +815,7 @@ export default function Historico() {
                   </TableHeader>
 
                   <TableBody>
-                    {loading ? (
+                    {loadingBeneficios ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8">
                           <div className="flex flex-col items-center justify-center">
@@ -835,7 +842,7 @@ export default function Historico() {
                                 `font-semibold border-2 rounded-full
                                 ${s.status === "APROVADA"
                                   ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)]"
-                                  : s.status === "REJEITADA" || s.status === "CANCELADA"
+                                  : s.status === "RECUSADA" || s.status === "CANCELADA"
                                     ? "bg-red-100 text-[var(--cinza-700)]"
                                     : s.status === "PENDENTE" || s.status === "PENDENTE_ASSINATURA"
                                       ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
