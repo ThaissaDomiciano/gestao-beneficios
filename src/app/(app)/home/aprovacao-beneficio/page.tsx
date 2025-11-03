@@ -5,40 +5,40 @@ import { format, startOfDay, endOfDay, isWithinInterval, parseISO } from "date-f
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { getAuthHeader } from '@/app/api/lib/authHeader';
-import type { Solicitacao, Documento, Beneficio} from "@/types/index";
+import type { Solicitacao, Documento, Beneficio } from "@/types/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
 import {
-  Select, 
-  SelectContent, 
-  SelectGroup, 
-  SelectItem, 
-  SelectLabel, 
-  SelectTrigger, 
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
 } from "@/components/ui/popover";
-import { 
-  Check, 
-  ChevronDownIcon, 
-  CircleCheckBig, 
-  Eye, 
-  Search, 
-  X 
+import {
+  Check,
+  ChevronDownIcon,
+  CircleCheckBig,
+  Eye,
+  Search,
+  X
 } from "lucide-react";
 import {
-  Dialog, 
-  DialogClose, 
-  DialogContent, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
@@ -62,8 +62,8 @@ export default function AprovacaoBeneficio() {
   const [beneficioSelecionado, setBeneficioSelecionado] = useState<string>(BENEFICIO_ALL);
   const [isAproving, setIsAproving] = useState(false);
 
-  useEffect(() => { 
-    buscarSolicitacoes(); 
+  useEffect(() => {
+    buscarSolicitacoes();
     buscarBeneficios();
   }, []);
 
@@ -104,9 +104,9 @@ export default function AprovacaoBeneficio() {
     const valorFinal = valorNumerico - descontoValor;
     return {
       desconto: descontoValor,
-      valorComDesconto: valorFinal.toLocaleString('pt-BR', { 
-        style: 'currency', 
-        currency: 'BRL' 
+      valorComDesconto: valorFinal.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
       })
     };
   };
@@ -161,7 +161,7 @@ export default function AprovacaoBeneficio() {
   async function buscarBeneficios() {
     try {
       const res = await fetch(`${api}/beneficio`, { headers: getAuthHeader() });
-      if(!res.ok) throw new Error("Erro ao carregar benefício");
+      if (!res.ok) throw new Error("Erro ao carregar benefício");
       const data = await res.json();
       setBeneficios(data.data || []);
     } catch (error) {
@@ -228,11 +228,11 @@ export default function AprovacaoBeneficio() {
         prev.map((s) =>
           s.id === solicitacaoSelecionada.id
             ? {
-                ...s,
-                status: "APROVADA",
-                valorTotal: payload.valorTotal,
-                desconto: payload.desconto
-              }
+              ...s,
+              status: "APROVADA",
+              valorTotal: payload.valorTotal,
+              desconto: payload.desconto
+            }
             : s
         )
       );
@@ -248,8 +248,8 @@ export default function AprovacaoBeneficio() {
   }
 
   return (
-    <main className="min-h-screen w-screen max-w-none">
-      <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
+    <main className="">
+      <div className="">
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
@@ -266,12 +266,12 @@ export default function AprovacaoBeneficio() {
             <div className="flex flex-col gap-3">
               <Label htmlFor="beneficiado" className="px-1">Beneficiado</Label>
               <form className="flex flex-1 min-w-0" onSubmit={handleSearch}>
-                <Input 
-                  type="text" 
-                  placeholder="Pesquise o beneficiado" 
-                  className="flex-1 min-w-0 rounded-r-none" 
+                <Input
+                  type="text"
+                  placeholder="Pesquise o beneficiado"
+                  className="flex-1 min-w-0 rounded-r-none"
                   value={pesquisarBeneficiado}
-                  onChange={(e) => setPesquisarBeneficiado(e.target.value)} 
+                  onChange={(e) => setPesquisarBeneficiado(e.target.value)}
                 />
                 <Button type="submit" className="flex-none rounded-l-none bg-[var(--verde-800)] hover:bg-[var(--verde-900)]">
                   <Search className="h-4 w-4 text-[var(--branco)]" />
@@ -282,7 +282,7 @@ export default function AprovacaoBeneficio() {
             <div className="flex flex-col gap-3">
               <Label htmlFor="beneficio" className="px-1">Benefício</Label>
               <Select
-                value={beneficioSelecionado} 
+                value={beneficioSelecionado}
                 onValueChange={setBeneficioSelecionado}
               >
                 <SelectTrigger className="w-[220px]">
@@ -335,10 +335,10 @@ export default function AprovacaoBeneficio() {
 
           <div className="space-y-4 mt-4 max-h-[60vh] overflow-y-auto pr-2">
             {loading ? (
-               <div className="flex flex-col items-center justify-center">
-                                  <Spinner />
-                                  <p className="mt-2">Carregando...</p>
-                                </div>
+              <div className="flex flex-col items-center justify-center">
+                <Spinner />
+                <p className="mt-2">Carregando...</p>
+              </div>
             ) : solicitacoesFiltradas.length === 0 ? (
               <div className="text-center">Nenhuma solicitação encontrada</div>
             ) : (

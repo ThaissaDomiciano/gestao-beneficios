@@ -10,12 +10,12 @@ import { ClipboardCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Form, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormControl 
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl
 } from "@/components/ui/form";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
@@ -71,9 +71,9 @@ export default function CadastroBeneficio() {
   }
 
   return (
-    <main className="min-h-screen w-screen max-w-none">
-      <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6"> 
+    <main className="">
+      <div className="">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
               <ClipboardCheck className="h-6 w-6 text-[var(--cinza-700)]" />
@@ -98,29 +98,29 @@ export default function CadastroBeneficio() {
                     </FormItem>
                   )}
                 />
-               <FormField
-              name="percentualDesconto"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel>Porcentagem de desconto</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="100"
-                      className="w-90 h-11"
-                      placeholder="Digite a porcentagem do desconto"
-                      name={field.name}
-                      ref={field.ref}
-                      onBlur={field.onBlur}
-                      value={(field.value as number | string) ?? ""}
-                      onChange={(e) => field.onChange(e.target.value)}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+                <FormField
+                  name="percentualDesconto"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel>Porcentagem de desconto</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="100"
+                          className="w-90 h-11"
+                          placeholder="Digite a porcentagem do desconto"
+                          name={field.name}
+                          ref={field.ref}
+                          onBlur={field.onBlur}
+                          value={(field.value as number | string) ?? ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div>

@@ -6,7 +6,9 @@ import {
   CalendarDays,
   ChevronDown,
   ChevronUp,
-  User2
+  User2,
+  Menu,
+  X
 } from "lucide-react"
 
 import {
@@ -46,6 +48,7 @@ import {
 import { useEffect, useRef, useState } from "react"
 import { useClickAway } from "react-use"
 import { useRouter } from "next/navigation"
+import { Button } from "./ui/button"
 
 const items = [
   { title: "Home", url: "/home", icon: Home },
@@ -72,20 +75,20 @@ function InnerSidebar() {
   useClickAway(ref, () => { if (open) setOpen(false) })
 
   useEffect(() => {
-  const fetchUsername = () => {
-    const token = localStorage.getItem("gb_token")
-    if (token) {
-      try {
-        const decoded = JSON.parse(decodeURIComponent(escape(atob(token.split(".")[1]))))
-        setUsername(decoded.nome || "Usuário")
-      } catch (error) {
-        console.error("Erro ao decodificar token:", error)
-        setUsername("Usuário")
+    const fetchUsername = () => {
+      const token = localStorage.getItem("gb_token")
+      if (token) {
+        try {
+          const decoded = JSON.parse(decodeURIComponent(escape(atob(token.split(".")[1]))))
+          setUsername(decoded.nome || "Usuário")
+        } catch (error) {
+          console.error("Erro ao decodificar token:", error)
+          setUsername("Usuário")
+        }
       }
     }
-  }
-  fetchUsername()
-}, [])
+    fetchUsername()
+  }, [])
 
   const handleOpenOnPointerDownCapture: React.PointerEventHandler<HTMLDivElement> = (e) => {
     if (!open) {
@@ -95,25 +98,38 @@ function InnerSidebar() {
     }
   }
 
- async function handleLogout() {
-  const STORAGE_KEY = "gb_token";
-  localStorage.removeItem(STORAGE_KEY);
-  router.replace("/login");
-}
+  async function handleLogout() {
+    const STORAGE_KEY = "gb_token";
+    localStorage.removeItem(STORAGE_KEY);
+    router.replace("/login");
+  }
 
   return (
     <>
+      {/* Botão Hambúrguer Mobile */}
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen(!open)}
+        className="fixed top-6 left-4 z-50 lg:hidden bg-[var(--verde-900)] hover:bg-[var(--verde-800)] text-white"
+      >
+        {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      </Button>
+
+      {/* Overlay escuro */}
       <div
         aria-hidden={!open}
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        className={`fixed inset-0 z-40 bg-black/40 transition-opacity ${open ? "opacity-100" : "pointer-events-none opacity-0"
+          }`}
         onClick={() => setOpen(false)}
       />
+
       <div ref={ref} className="relative z-50">
         <Sidebar
           variant="floating"
           collapsible="icon"
           onPointerDownCapture={handleOpenOnPointerDownCapture}
-          className="group bg-sidebar text-sidebar-foreground
+          className={`group bg-sidebar text-sidebar-foreground
                       [--sidebar-width:230px] [--sidebar-width-icon:60px]
                       [--sidebar-border:transparent]           
                       border-0 ring-0 shadow-none outline-none 
@@ -122,11 +138,18 @@ function InnerSidebar() {
                       [&_[data-sidebar='sidebar']]:ring-0
                       [&_[data-sidebar='rail']]:border-0      
                       [&_[data-sidebar='content']]:border-0
-                      [&_[data-sidebar='footer']]:border-0"
+                      [&_[data-sidebar='footer']]:border-0
+                      
+                      lg:translate-x-0
+                      ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                      transition-transform duration-300 ease-in-out`}
         >
           <SidebarHeader>
-            <div className="gap-3 px-2 py-4">
-              <Image src="/logo.svg" alt="Logo" width={40} height={40} />
+            <div className="gap-3 ml-1 py-4 flex items-center">
+              <Image src="/logo.svg" alt="Logo" width={32} height={32} />
+              <span className="font-semibold text-lg group-data-[collapsible=icon]:hidden">
+                Gestão Benefícios
+              </span>
             </div>
           </SidebarHeader>
 
@@ -155,6 +178,7 @@ function InnerSidebar() {
                                   key={sub.title}
                                   href={sub.url}
                                   className="text-sm opacity-90 hover:opacity-100"
+                                  onClick={() => setOpen(false)}
                                 >
                                   {sub.title}
                                 </Link>
@@ -164,7 +188,7 @@ function InnerSidebar() {
                         </Collapsible>
                       ) : (
                         <SidebarMenuButton asChild className="gap-2 [&>svg]:h-6 [&>svg]:w-6">
-                          <Link href={item.url}>
+                          <Link href={item.url} onClick={() => setOpen(false)}>
                             <item.icon />
                             <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                           </Link>
@@ -182,8 +206,9 @@ function InnerSidebar() {
               <SidebarMenuItem>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton className="bg-emerald-700">
-                      <User2 /> {username}
+                    <SidebarMenuButton className="bg-emerald-700 text-nowrap">
+                      <User2 />
+                      <span className="group-data-[collapsible=icon]:hidden">{username}</span>
                       <ChevronUp className="ml-auto" />
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>

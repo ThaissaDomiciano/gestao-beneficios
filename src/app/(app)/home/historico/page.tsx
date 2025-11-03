@@ -5,15 +5,12 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getAuthHeader } from "@/app/api/lib/authHeader";
 import { toast } from "sonner";
-import type { Agendamento, Solicitacao } from "@/types";
-import { ChevronDownIcon, History, Search, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import type { Agendamento, Solicitacao, Colaborador } from "@/types";
+import { History, MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
@@ -26,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
+import { formatarTexto } from "@/_helpers/textFormat";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -36,31 +34,46 @@ export default function Historico() {
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const [searchA, setSearchA] = useState("");
+  // States para Agendamentos
+  const [colaboradores, setColaboradores] = useState<Colaborador[]>([]);
+  const [colaboradorId, setColaboradorId] = useState<string>("__all__");
   const [statusA, setStatusA] = useState<string>("__all__");
-  const [openA, setOpenA] = useState(false);
-  const [dateA, setDateA] = useState<Date | undefined>(undefined);
   const [pageA, setPageA] = useState(0);
   const [sizeA, setSizeA] = useState(10);
   const [totalPagesA, setTotalPagesA] = useState(0);
   const [totalElementsA, setTotalElementsA] = useState(0);
 
-  const [searchB, setSearchB] = useState("");
+  // States para Benefícios
+  const [colaboradorIdB, setColaboradorIdB] = useState<string>("__all__");
   const [statusB, setStatusB] = useState<string>("__all__");
-  const [openB, setOpenB] = useState(false);
-  const [dateB, setDateB] = useState<Date | undefined>(undefined);
   const [pageB, setPageB] = useState(0);
   const [sizeB, setSizeB] = useState(10);
   const [totalPagesB, setTotalPagesB] = useState(0);
   const [totalElementsB, setTotalElementsB] = useState(0);
 
   useEffect(() => {
+    buscarColaboradores();
+  }, []);
+
+  useEffect(() => {
     buscarAgendamentos();
-  }, [pageA, sizeA, statusA, dateA]);
+  }, [pageA, sizeA, statusA, colaboradorId]);
 
   useEffect(() => {
     buscarSolicitacoes();
-  }, [pageB, sizeB, statusB, dateB]);
+  }, [pageB, sizeB, statusB, colaboradorIdB]);
+
+  async function buscarColaboradores() {
+    try {
+      const res = await fetch(`${api}/colaborador`, { headers: getAuthHeader() });
+      if (!res.ok) throw new Error("Erro ao carregar colaboradores");
+      const data = await res.json();
+      setColaboradores(data.data || []);
+    } catch (error) {
+      console.error(error);
+      toast.error("Não foi possível carregar os colaboradores");
+    }
+  }
 
   async function buscarAgendamentos() {
     setLoading(true);
@@ -73,9 +86,8 @@ export default function Historico() {
         params.set('status', statusA);
       }
 
-      if (dateA) {
-        const dateStr = format(dateA, 'yyyy-MM-dd');
-        params.set('data', dateStr);
+      if (colaboradorId !== "__all__") {
+        params.set('colaboradorId', colaboradorId);
       }
 
       const queryString = params.toString();
@@ -105,9 +117,8 @@ export default function Historico() {
         params.set('status', statusB);
       }
 
-      if (dateB) {
-        const dateStr = format(dateB, 'yyyy-MM-dd');
-        params.set('data', dateStr);
+      if (colaboradorIdB !== "__all__") {
+        params.set('colaboradorId', colaboradorIdB);
       }
 
       const queryString = params.toString();
@@ -200,20 +211,7 @@ export default function Historico() {
     });
   }, [agendamentos]);
 
-  const statusOptionsA = useMemo(() => {
-    const set = new Set<string>();
-    for (const a of agendamentos) if (a.status) set.add(a.status);
-    return Array.from(set);
-  }, [agendamentos]);
 
-  const linhasAFiltered = useMemo(() => {
-    if (!searchA.trim()) return linhasA;
-
-    return linhasA.filter((a) => {
-      const matchNome = a.paciente.toLowerCase().includes(searchA.trim().toLowerCase());
-      return matchNome;
-    });
-  }, [linhasA, searchA]);
 
   const linhasB = useMemo(() => {
     const toBRL = (n?: number) =>
@@ -269,15 +267,6 @@ export default function Historico() {
     return Array.from(set);
   }, [solicitacoes]);
 
-  const linhasBFiltered = useMemo(() => {
-    if (!searchB.trim()) return linhasB;
-
-    return linhasB.filter((s) => {
-      const matchNome = s.paciente.toLowerCase().includes(searchB.trim().toLowerCase());
-      return matchNome;
-    });
-  }, [linhasB, searchB]);
-
   const PaginationControls = ({
     page,
     totalPages,
@@ -297,15 +286,28 @@ export default function Historico() {
     const endItem = Math.min((page + 1) * size, totalElements);
 
     return (
-      <div className="flex items-center justify-between px-2 py-4 border-t">
+      <div
+        className="
+    flex flex-col md:flex-row md:items-center md:justify-between 
+    items-center gap-4 
+    px-2 py-4 border-t
+  "
+      >
+        {/* Em telas pequenas (mobile-first), o 'items-center' do pai 
+    já centraliza este bloco.
+  */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
             Mostrando {startItem} a {endItem} de {totalElements} resultados
           </span>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
+        {/* Este contêiner também "empilha" no mobile (flex-col) 
+    e vira linha um pouco antes (sm:flex-row)
+  */}
+        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+          {/* Bloco "Itens por página" */}
+          <div className="items-center gap-2 hidden sm:flex ">
             <span className="text-sm text-muted-foreground">Itens por página:</span>
             <Select value={String(size)} onValueChange={(val) => onSizeChange(Number(val))}>
               <SelectTrigger className="w-[70px]">
@@ -320,6 +322,7 @@ export default function Historico() {
             </Select>
           </div>
 
+          {/* Bloco de Navegação de Página */}
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -351,8 +354,8 @@ export default function Historico() {
   };
 
   return (
-    <main className="min-h-screen w-screen max-w-none">
-      <div className="w-full px-6 sm:px-10 lg:px-16 xl:px-24 2xl:px-32">
+    <main className="">
+      <div className="">
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
@@ -362,11 +365,11 @@ export default function Historico() {
           </div>
         </div>
 
-        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-8 shadow-sm">
-          <div className="flex gap-4">
+        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-4 md:p-8 shadow-sm max-h-[80vh] h-full flex flex-col">
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={() => setSelectedTab("agendamento")}
-              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${selectedTab === "agendamento"
+              className={`rounded-md border px-4 py-2 font-medium transition mb-4 cursor-pointer ${selectedTab === "agendamento"
                 ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
                 : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
                 }`}
@@ -375,7 +378,7 @@ export default function Historico() {
             </button>
             <button
               onClick={() => setSelectedTab("beneficio")}
-              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${selectedTab === "beneficio"
+              className={`rounded-md border px-4 py-2 font-medium transition mb-4 cursor-pointer ${selectedTab === "beneficio"
                 ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
                 : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
                 }`}
@@ -385,41 +388,26 @@ export default function Historico() {
           </div>
 
           {selectedTab === "agendamento" && (
-            <div className="mt-4 w-full">
-              <div className="flex items-end gap-4 w-full max-w-6xl mb-4 flex-wrap">
-                <div className="flex flex-col gap-2 w-[320px]">
-                  <Label htmlFor="nome-a" className="px-1">Nome do colaborador</Label>
-                  <form className="flex" onSubmit={(e) => e.preventDefault()}>
-                    <Input
-                      id="nome-a"
-                      type="text"
-                      placeholder="Pesquise o nome"
-                      value={searchA}
-                      onChange={(e) => setSearchA(e.target.value)}
-                      className="flex-1 min-w-0 rounded-r-none"
-                    />
-                    <Button type="submit" className="flex-none rounded-l-none bg-[var(--verde-800)] hover:bg-[var(--verde-900)]">
-                      <Search className="h-4 w-4 text-[var(--branco)]" />
-                    </Button>
-                  </form>
-                </div>
-
-                <div className="flex flex-col gap-2 w-[240px]">
-                  <Label htmlFor="status-a" className="px-1">Status</Label>
-                  <Select value={statusA} onValueChange={(val) => { setStatusA(val); setPageA(0); }}>
-                    <SelectTrigger id="status-a" className="w-[240px]">
-                      <SelectValue placeholder="Selecione o status" />
+            <div className="mt-4 w-full flex-1 flex flex-col min-h-0">
+              <div className="flex items-end gap-4 w-full mb-4 flex-wrap">
+                <div className="flex flex-col gap-2 w-full max-w-[320px] min-w-[160px]">
+                  <Label htmlFor="colaborador-a" className="px-1">Colaborador</Label>
+                  <Select value={colaboradorId} onValueChange={(val) => { setColaboradorId(val); setPageA(0); }}>
+                    <SelectTrigger id="colaborador-a" className="w-full">
+                      <SelectValue placeholder="Selecione o colaborador" />
                     </SelectTrigger>
-                    <SelectContent className="w-[240px] bg-[var(--cinza-200)]">
+                    <SelectContent className="bg-[var(--cinza-200)]">
                       <SelectGroup>
                         <SelectLabel>Todos</SelectLabel>
-                        <SelectItem value="__all__">Todos</SelectItem>
+                        <SelectItem value="__all__">Todos os colaboradores</SelectItem>
                       </SelectGroup>
-                      {statusOptionsA.length > 0 && (
+                      {colaboradores.length > 0 && (
                         <SelectGroup>
-                          <SelectLabel>Disponíveis</SelectLabel>
-                          {statusOptionsA.map((s) => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          <SelectLabel>Colaboradores</SelectLabel>
+                          {colaboradores.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.nome} - {c.matricula}
+                            </SelectItem>
                           ))}
                         </SelectGroup>
                       )}
@@ -427,37 +415,152 @@ export default function Historico() {
                   </Select>
                 </div>
 
-                <div className="flex flex-col gap-2 w-[260px]">
-                  <Label htmlFor="date-a" className="px-1">Data</Label>
-                  <Popover open={openA} onOpenChange={setOpenA}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" id="date-a" className="w-[260px] justify-between font-normal">
-                        {dateA ? format(dateA, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
-                        <ChevronDownIcon className="ml-2 h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto overflow-hidden p-0 bg-[var(--cinza-200)]" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={dateA}
-                        captionLayout="dropdown"
-                        onSelect={(d) => { setDateA(d); setOpenA(false); setPageA(0); }}
-                        locale={ptBR}
-                      />
-                      <div className="flex justify-end gap-2 p-2 border-t">
-                        <Button variant="ghost" onClick={() => { setDateA(undefined); setOpenA(false); setPageA(0); }}>
-                          Limpar data
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                <div className="flex flex-col gap-2 max-w-[240px] w-full min-w-[120px]">
+                  <Label htmlFor="status-a" className="px-1">Status</Label>
+                  <Select value={statusA} onValueChange={(val) => { setStatusA(val); setPageA(0); }}>
+                    <SelectTrigger id="status-a" className="w-full">
+                      <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[var(--cinza-200)]">
+                      <SelectGroup>
+                        <SelectLabel>Todos</SelectLabel>
+                        <SelectItem value="__all__">Todos</SelectItem>
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel>Status</SelectLabel>
+                        <SelectItem value="AGENDADO">AGENDADO</SelectItem>
+                        <SelectItem value="CANCELADO">CANCELADO</SelectItem>
+                        <SelectItem value="CONCLUIDO">CONCLUIDO</SelectItem>
+                        <SelectItem value="FALTOU">FALTOU</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              <div className="overflow-auto max-h-[60vh] border rounded-lg">
-                <Table className="w-full">
-                  <TableHeader>
-                    <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
+              {/* Cards para mobile/tablet */}
+              <div className="lg:hidden space-y-4 overflow-y-auto flex-1 overflow-x-hidden [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-8 ">
+                    <Spinner />
+                    <p className="mt-2">Carregando...</p>
+                  </div>
+                ) : linhasA.length === 0 ? (
+                  <div className="text-center py-8 border rounded-lg bg-white">
+                    Nenhum agendamento encontrado
+                  </div>
+                ) : (
+                  linhasA.map((a) => (
+                    <div
+                      key={a.idAgendamento}
+                      className="relative border-t-4 border-t-[var(--verde-900)] rounded-lg bg-white shadow-md overflow-hidden "
+                    >
+                      <div className="p-4 space-y-4">
+                        {/* Header do Card */}
+                        <div className="flex justify-between items-start">
+                          <h3 className="text-xl font-bold text-[var(--cinza-700)]">{a.paciente}</h3>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                disabled={actionLoading === a.idAgendamento || a.status === "FALTOU" || a.status === "CANCELADO"}
+                              >
+                                {actionLoading === a.idAgendamento ? (
+                                  <Spinner className="h-4 w-4" />
+                                ) : (
+                                  <MoreVertical className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-[var(--cinza-200)]">
+                              <DropdownMenuItem
+                                onClick={() => handleMarcarFalta(a.idAgendamento)}
+                                className="cursor-pointer"
+                              >
+                                Marcar falta
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleCancelar(a.idAgendamento)}
+                                className="cursor-pointer text-red-600 focus:text-red-600"
+                              >
+                                Cancelar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center">
+                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span>{a.medicoNome}</span>
+                        </div>
+
+                        {/* Especialidade */}
+                        <div className="space-y-1">
+                          <p className="text-xs text-gray-500 uppercase tracking-wide">ESPECIALIDADE</p>
+                          <p className="font-medium text-[var(--cinza-700)]">{a.especialidadeNome}</p>
+                        </div>
+
+                        {/* Data e Horário */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <p className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                              </svg>
+                              DATA
+                            </p>
+                            <p className="font-medium text-[var(--cinza-700)]">{a.dataFmt}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                              </svg>
+                              HORÁRIO
+                            </p>
+                            <p className="font-medium text-[var(--cinza-700)]">{a.horaFmt}</p>
+                          </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className="flex items-center justify-between pt-3 border-t">
+                          <span className="text-sm text-gray-500">Status</span>
+                          <Badge
+                            className={
+                              `px-4 py-1 font-semibold rounded-full text-sm ${a.status === "CONCLUIDO"
+                                ? "bg-green-500 text-white hover:bg-green-600"
+                                : a.status === "AGENDADO"
+                                  ? "bg-cyan-500 text-white hover:bg-cyan-600"
+                                  : a.status === "FALTOU"
+                                    ? "bg-red-500 text-white hover:bg-red-600"
+                                    : a.status === "CANCELADO"
+                                      ? "bg-gray-400 text-white hover:bg-gray-500"
+                                      : "bg-gray-200 text-gray-700"
+                              }`
+                            }
+                          >
+                            {formatarTexto(a.status)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+
+
+              </div>
+
+              {/* Tabela para desktop */}
+              <div className="hidden lg:block overflow-auto max-h-[60vh] border-black border rounded-md [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
+                <Table className="w-full relative">
+                  <TableHeader className="sticky top-0 z-10">
+                    <TableRow className="bg-[var(--verde-800)] text-[var(--branco)] hover:bg-[var(--verde-800)]">
                       <TableHead>Nome</TableHead>
                       <TableHead>Médico</TableHead>
                       <TableHead>Especialidade</TableHead>
@@ -467,6 +570,7 @@ export default function Historico() {
                       <TableHead className="text-center">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
+
                   <TableBody>
                     {loading ? (
                       <TableRow>
@@ -477,13 +581,13 @@ export default function Historico() {
                           </div>
                         </TableCell>
                       </TableRow>
-                    ) : linhasAFiltered.length === 0 ? (
+                    ) : linhasA.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={7} className="text-center py-8">Nenhum agendamento encontrado</TableCell>
                       </TableRow>
                     ) : (
-                      linhasAFiltered.map((a) => (
-                        <TableRow key={a.idAgendamento}>
+                      linhasA.map((a, index) => (
+                        <TableRow key={a.idAgendamento} className={index % 2 === 1 ? "bg-[#DDE9E6]" : ""}>
                           <TableCell className="p-4">{a.paciente}</TableCell>
                           <TableCell>{a.medicoNome}</TableCell>
                           <TableCell>{a.especialidadeNome}</TableCell>
@@ -492,16 +596,17 @@ export default function Historico() {
                           <TableCell>
                             <Badge
                               className={
-                                `font-semibold border-2 rounded-full  ${a.status === "CONCLUIDO"
-                                  ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] "
+                                `font-semibold border-2 rounded-full ${a.status === "CONCLUIDO"
+                                  ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)]"
                                   : a.status === "AGENDADO"
                                     ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
                                     : a.status === "FALTOU" || a.status === "CANCELADO"
                                       ? "bg-[var(--erro-800)] text-[var(--cinza-700)]"
                                       : "bg-gray-100 text-[var(--cinza-700)]"
-                                }`}
+                                }`
+                              }
                             >
-                              {a.status.replace("_", " ")}
+                              {formatarTexto(a.status)}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">
@@ -542,6 +647,9 @@ export default function Historico() {
                   </TableBody>
                 </Table>
 
+
+              </div>
+              <div className="mt-2 z-10 bg-[var(--cinza-200)]">
                 <PaginationControls
                   page={pageA}
                   totalPages={totalPagesA}
@@ -555,32 +663,40 @@ export default function Historico() {
           )}
 
           {selectedTab === "beneficio" && (
-            <div className="mt-4 w-full">
-              <div className="flex items-end gap-4 w-full max-w-6xl mb-4 flex-wrap">
-                <div className="flex flex-col gap-2 w-[320px]">
-                  <Label htmlFor="nome-b" className="px-1">Beneficiado</Label>
-                  <form className="flex" onSubmit={(e) => e.preventDefault()}>
-                    <Input
-                      id="nome-b"
-                      type="text"
-                      placeholder="Pesquise o beneficiado"
-                      value={searchB}
-                      onChange={(e) => setSearchB(e.target.value)}
-                      className="flex-1 min-w-0 rounded-r-none"
-                    />
-                    <Button type="submit" className="flex-none rounded-l-none bg-[var(--verde-800)] hover:bg-[var(--verde-900)]">
-                      <Search className="h-4 w-4 text-[var(--branco)]" />
-                    </Button>
-                  </form>
+            <div className="mt-4 w-full flex-1 flex flex-col min-h-0">
+              <div className="flex items-end gap-4 w-full mb-4 flex-wrap">
+                <div className="flex flex-col gap-2 w-full max-w-[320px] min-w-[160px]">
+                  <Label htmlFor="colaborador-b" className="px-1">Colaborador</Label>
+                  <Select value={colaboradorIdB} onValueChange={(val) => { setColaboradorIdB(val); setPageB(0); }}>
+                    <SelectTrigger id="colaborador-b" className="w-full">
+                      <SelectValue placeholder="Selecione o colaborador" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[var(--cinza-200)]">
+                      <SelectGroup>
+                        <SelectLabel>Todos</SelectLabel>
+                        <SelectItem value="__all__">Todos os colaboradores</SelectItem>
+                      </SelectGroup>
+                      {colaboradores.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel>Colaboradores</SelectLabel>
+                          {colaboradores.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.nome} - {c.matricula}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="flex flex-col gap-2 w-[240px]">
+                <div className="flex flex-col gap-2 max-w-[240px] w-full min-w-[120px]">
                   <Label htmlFor="status-b" className="px-1">Status</Label>
                   <Select value={statusB} onValueChange={(val) => { setStatusB(val); setPageB(0); }}>
-                    <SelectTrigger id="status-b" className="w-[240px]">
+                    <SelectTrigger id="status-b" className="w-full">
                       <SelectValue placeholder="Selecione o status" />
                     </SelectTrigger>
-                    <SelectContent className="w-[240px] bg-[var(--cinza-200)]">
+                    <SelectContent className="bg-[var(--cinza-200)]">
                       <SelectGroup>
                         <SelectLabel>Todos</SelectLabel>
                         <SelectItem value="__all__">Todos</SelectItem>
@@ -596,38 +712,92 @@ export default function Historico() {
                     </SelectContent>
                   </Select>
                 </div>
-
-                <div className="flex flex-col gap-2 w-[260px]">
-                  <Label htmlFor="date-b" className="px-1">Data</Label>
-                  <Popover open={openB} onOpenChange={setOpenB}>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" id="date-b" className="w-[260px] justify-between font-normal">
-                        {dateB ? format(dateB, "dd/MM/yyyy", { locale: ptBR }) : "Selecione a data"}
-                        <ChevronDownIcon className="ml-2 h-4 w-4" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto overflow-hidden p-0 bg-[var(--cinza-200)]" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={dateB}
-                        captionLayout="dropdown"
-                        onSelect={(d) => { setDateB(d); setOpenB(false); setPageB(0); }}
-                        locale={ptBR}
-                      />
-                      <div className="flex justify-end gap-2 p-2 border-t">
-                        <Button variant="ghost" onClick={() => { setDateB(undefined); setOpenB(false); setPageB(0); }}>
-                          Limpar data
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
               </div>
 
-              <div className="overflow-auto max-h-[60vh] border rounded-lg">
-                <Table className="w-full">
-                  <TableHeader>
-                    <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
+              {/* Cards para mobile/tablet */}
+              <div className="lg:hidden space-y-4 overflow-y-auto flex-1 overflow-x-hidden [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <Spinner />
+                    <p className="mt-2">Carregando...</p>
+                  </div>
+                ) : linhasB.length === 0 ? (
+                  <div className="text-center py-8 border rounded-lg bg-white">
+                    Nenhuma solicitação encontrada
+                  </div>
+                ) : (
+                  linhasB.map((s) => (
+                    <div
+                      key={s.id}
+                      className="relative border-t-4 border-t-[var(--verde-900)] rounded-lg bg-white shadow-md overflow-hidden"
+                    >
+                      <div className="p-4 space-y-4">
+                        {/* Header do Card */}
+                        <h3 className="text-xl font-bold text-[var(--cinza-700)]">{s.paciente}</h3>
+
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center">
+                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span>{formatarTexto(s.tipoPagamento)}</span>
+                        </div>
+
+                        {/* Data */}
+                        <div className="space-y-1">
+                          <p className="text-xs text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                            </svg>
+                            DATA
+                          </p>
+                          <p className="font-medium text-[var(--cinza-700)]">{s.dataFmt}</p>
+                        </div>
+
+                        {/* Valores */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">VALOR TOTAL</p>
+                            <p className="font-medium text-[var(--cinza-700)]">{s.valorTotal}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">DESCONTO</p>
+                            <p className="font-medium text-[var(--cinza-700)]">{s.desconto}</p>
+                          </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className="flex items-center justify-between pt-3 border-t">
+                          <span className="text-sm text-gray-500">Status</span>
+                          <Badge
+                            className={
+                              `px-4 py-1 font-semibold rounded-full text-sm ${s.status === "APROVADA"
+                                ? "bg-green-500 text-white hover:bg-green-600"
+                                : s.status === "PENDENTE" || s.status === "PENDENTE_ASSINATURA"
+                                  ? "bg-cyan-500 text-white hover:bg-cyan-600"
+                                  : s.status === "REJEITADA" || s.status === "CANCELADA"
+                                    ? "bg-red-500 text-white hover:bg-red-600"
+                                    : "bg-gray-200 text-gray-700"
+                              }`
+                            }
+                          >
+                            {formatarTexto(s.status)}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+
+
+              </div>
+
+              {/* Tabela para desktop */}
+              <div className="hidden lg:block overflow-auto max-h-[60vh] border-black border rounded-md [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
+                <Table className="w-full relative">
+                  <TableHeader className="sticky top-0 z-10">
+                    <TableRow className="bg-[var(--verde-800)] text-[var(--branco)] hover:bg-[var(--verde-800)]">
                       <TableHead>Nome</TableHead>
                       <TableHead>Tipo de Pagamento</TableHead>
                       <TableHead>Data</TableHead>
@@ -647,31 +817,33 @@ export default function Historico() {
                           </div>
                         </TableCell>
                       </TableRow>
-                    ) : linhasBFiltered.length === 0 ? (
+                    ) : linhasB.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8">Nenhuma solicitação encontrada</TableCell>
                       </TableRow>
                     ) : (
-                      linhasBFiltered.map((s) => (
-                        <TableRow key={s.id}>
+                      linhasB.map((s, index) => (
+                        <TableRow key={s.id} className={index % 2 === 1 ? "bg-[#DDE9E6]" : ""}>
                           <TableCell className="p-4">{s.paciente}</TableCell>
-                          <TableCell>{s.tipoPagamento}</TableCell>
+                          <TableCell>{formatarTexto(s.tipoPagamento)}</TableCell>
                           <TableCell>{s.dataFmt}</TableCell>
                           <TableCell>{s.valorTotal}</TableCell>
                           <TableCell>{s.desconto}</TableCell>
                           <TableCell>
                             <Badge
                               className={
-                                s.status === "APROVADA"
-                                  ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                                `font-semibold border-2 rounded-full
+                                ${s.status === "APROVADA"
+                                  ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)]"
                                   : s.status === "REJEITADA" || s.status === "CANCELADA"
-                                    ? "bg-red-100 text-[var(--cinza-700)] font-semibold border-2 border-black/50"
+                                    ? "bg-red-100 text-[var(--cinza-700)]"
                                     : s.status === "PENDENTE" || s.status === "PENDENTE_ASSINATURA"
-                                      ? "bg-[var(--alerta-800)] text-[var(--cinza-700)] font-semibold border-2 border-black/50"
-                                      : "bg-gray-100 text-[var(--cinza-700)] border-2 border-black/50"
+                                      ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
+                                      : "bg-gray-100 text-[var(--cinza-700)]"
+                                }`
                               }
                             >
-                              {s.status.replace("_", " ")}
+                              {formatarTexto(s.status)}
                             </Badge>
                           </TableCell>
                         </TableRow>
@@ -680,6 +852,9 @@ export default function Historico() {
                   </TableBody>
                 </Table>
 
+
+              </div>
+              <div className="mt-2 z-10 bg-[var(--cinza-200)]">
                 <PaginationControls
                   page={pageB}
                   totalPages={totalPagesB}
@@ -693,6 +868,6 @@ export default function Historico() {
           )}
         </div>
       </div>
-    </main>
+    </main >
   );
 }
