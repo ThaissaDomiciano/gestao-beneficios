@@ -296,36 +296,36 @@ export default function AprovacaoBeneficio() {
           </div>
         </div>
 
-        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-8 shadow-sm">
+        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-4 md:p-8 shadow-sm">
           <span className="mb-4 block font-bold">Filtros</span>
 
-          <div className="flex items-center gap-2 w-full max-w-4xl">
-            <div className="flex flex-col gap-3">
+          <div className="flex flex-col md:flex-row md:items-end gap-4 w-full">
+            <div className="flex flex-col gap-3 w-full md:w-auto md:flex-1 md:min-w-[200px]">
               <Label htmlFor="beneficiado" className="px-1">Beneficiado</Label>
-              <form className="flex flex-1 min-w-0" onSubmit={handleSearch}>
+              <form className="flex w-full" onSubmit={handleSearch}>
                 <Input
                   type="text"
                   placeholder="Pesquise o beneficiado"
-                  className="flex-1 min-w-0 rounded-r-none"
+                  className="flex-1 rounded-r-none"
                   value={pesquisarBeneficiado}
                   onChange={(e) => setPesquisarBeneficiado(e.target.value)}
                 />
-                <Button type="submit" className="flex-none rounded-l-none bg-[var(--verde-800)] hover:bg-[var(--verde-900)]">
+                <Button type="submit" className="rounded-l-none bg-[var(--verde-800)] hover:bg-[var(--verde-900)]">
                   <Search className="h-4 w-4 text-[var(--branco)]" />
                 </Button>
               </form>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[110px]">
               <Label htmlFor="beneficio" className="px-1">Benefício</Label>
               <Select
                 value={beneficioSelecionado}
                 onValueChange={setBeneficioSelecionado}
               >
-                <SelectTrigger className="w-[220px]">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecione o benefício" />
                 </SelectTrigger>
-                <SelectContent className="w-[220px] bg-[var(--cinza-200)]">
+                <SelectContent className="bg-[var(--cinza-200)]">
                   <SelectGroup>
                     <SelectLabel>Benefícios</SelectLabel>
                     <SelectItem value={BENEFICIO_ALL}>Todos</SelectItem>
@@ -339,13 +339,13 @@ export default function AprovacaoBeneficio() {
               </Select>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[110px]">
               <Label htmlFor="date" className="px-1">Data</Label>
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" id="date" className="w-[250px] justify-between font-normal">
+                  <Button variant="outline" id="date" className="w-full justify-between font-normal">
                     {date ? format(date, "dd/MM/yyyy") : "Selecione a data"}
-                    <ChevronDownIcon className="ml-2 h-4 w-4" />
+                    <ChevronDownIcon className="ml-2 h-4 w-4 flex-shrink-0" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto overflow-hidden p-0 bg-[var(--cinza-200)]" align="start">
@@ -370,29 +370,29 @@ export default function AprovacaoBeneficio() {
             </div>
           </div>
 
-          <div className="space-y-4 mt-4 max-h-[60vh] overflow-y-auto pr-2">
+          <div className="space-y-4 mt-4 max-h-[60vh] overflow-y-auto pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
             {loading ? (
-              <div className="flex flex-col items-center justify-center">
+              <div className="flex flex-col items-center justify-center py-8">
                 <Spinner />
                 <p className="mt-2">Carregando...</p>
               </div>
             ) : solicitacoesFiltradas.length === 0 ? (
-              <div className="text-center">Nenhuma solicitação encontrada</div>
+              <div className="text-center py-8">Nenhuma solicitação encontrada</div>
             ) : (
               solicitacoesFiltradas.map((solicitacao) => (
-                <div key={solicitacao.id} className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex gap-2">
-                      <span className="font-semibold">Benefício:</span>
-                      <p>{solicitacao.beneficio.nome}</p>
+                <div key={solicitacao.id} className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                  <div className="flex flex-col gap-2 min-w-0 flex-1">
+                    <div className="flex flex-col sm:flex-row sm:gap-2">
+                      <span className="font-semibold whitespace-nowrap">Benefício:</span>
+                      <p className="break-words">{solicitacao.beneficio.nome}</p>
                     </div>
-                    <div className="flex gap-2">
-                      <span className="font-semibold">Beneficiado:</span>
-                      <p>{solicitacao.dependente ? solicitacao.dependente.nome : solicitacao.colaborador.nome}</p>
+                    <div className="flex flex-col sm:flex-row sm:gap-2">
+                      <span className="font-semibold whitespace-nowrap">Beneficiado:</span>
+                      <p className="break-words">{solicitacao.dependente ? solicitacao.dependente.nome : solicitacao.colaborador.nome}</p>
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex flex-col sm:items-end gap-2 flex-shrink-0">
                     <p className="text-sm text-[var(--cinza-700)]">
                       {format(new Date(solicitacao.dataSolicitacao), "dd/MM/yyyy", { locale: ptBR })}
                     </p>
@@ -400,31 +400,31 @@ export default function AprovacaoBeneficio() {
                     <Dialog>
                       <DialogTrigger
                         asChild
-                        className="bg-[var(--verde-900)] text-[var(--branco)]"
+                        className="bg-[var(--verde-900)] text-[var(--branco)] w-full sm:w-auto"
                         onClick={() => abrirModalDetalhe(solicitacao)}
                       >
                         <Button variant="outline">Detalhar</Button>
                       </DialogTrigger>
 
-                      <DialogContent className="sm:max-w-[560px] bg-[var(--cinza-200)]">
+                      <DialogContent className="w-[95vw] max-w-[560px] max-h-[90vh] overflow-y-auto bg-[var(--cinza-200)]">
                         {solicitacaoSelecionada && modo === "detalhe" ? (
                           <>
                             <DialogHeader>
-                              <DialogTitle className="text-2xl font-bold text-[var(--verde-900)]">Detalhe do benefício</DialogTitle>
+                              <DialogTitle className="text-xl sm:text-2xl font-bold text-[var(--verde-900)]">Detalhe do benefício</DialogTitle>
                             </DialogHeader>
 
                             <div className="space-y-3">
-                              <div className="flex items-baseline gap-2">
+                              <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
                                 <span className="font-semibold">Beneficiado:</span>
-                                <span>{solicitacaoSelecionada.dependente ? solicitacaoSelecionada.dependente.nome : solicitacaoSelecionada.colaborador.nome}</span>
+                                <span className="break-words">{solicitacaoSelecionada.dependente ? solicitacaoSelecionada.dependente.nome : solicitacaoSelecionada.colaborador.nome}</span>
                               </div>
-                              <div className="flex items-baseline gap-2">
+                              <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
                                 <span className="font-semibold">Benefício:</span>
-                                <span>{solicitacaoSelecionada.beneficio.nome}</span>
+                                <span className="break-words">{solicitacaoSelecionada.beneficio.nome}</span>
                               </div>
-                              <div className="flex items-baseline gap-2">
+                              <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
                                 <span className="font-semibold">Descrição:</span>
-                                <span>{solicitacaoSelecionada.descricao}</span>
+                                <span className="break-words">{solicitacaoSelecionada.descricao}</span>
                               </div>
 
                               <div className="mt-4">
@@ -433,16 +433,16 @@ export default function AprovacaoBeneficio() {
                                   {documentos.map((doc) => (
                                     <div
                                       key={`${doc.nomeArquivoUnico}-${doc.dataUpload}`}
-                                      className="flex items-center justify-between p-2 border rounded-md bg-[var(--branco)]"
+                                      className="flex items-center justify-between p-2 border rounded-md bg-[var(--branco)] gap-2"
                                     >
-                                      <span className="truncate flex-1" title={doc.nomeArquivoOriginal}>
+                                      <span className="truncate flex-1 text-sm" title={doc.nomeArquivoOriginal}>
                                         {doc.nomeArquivoOriginal}
                                       </span>
                                       <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => abrirDocumento(doc.nomeArquivoUnico)}
-                                        className="ml-2"
+                                        className="flex-shrink-0"
                                       >
                                         <Eye className="h-4 w-4" />
                                       </Button>
@@ -455,8 +455,8 @@ export default function AprovacaoBeneficio() {
                               </div>
                             </div>
 
-                            <DialogFooter className="mt-6 text-[var(--branco)]">
-                              <Button onClick={() => setModo("aprovar")} className="gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80" variant="secondary">
+                            <DialogFooter className="mt-6 flex-col sm:flex-row gap-2">
+                              <Button onClick={() => setModo("aprovar")} className="w-full sm:w-auto gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80 text-[var(--branco)]" variant="secondary">
                                 <CircleCheckBig size={18} className="text-[var(--branco)]" />
                                 Aprovar
                               </Button>
@@ -465,7 +465,7 @@ export default function AprovacaoBeneficio() {
                                 onClick={rejeitarSolicitacao}
                                 disabled={isRejecting}
                                 variant="outline" 
-                                className="gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80"
+                                className="w-full sm:w-auto gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80 text-[var(--branco)]"
                               >
                                 {isRejecting ? (
                                   <>
@@ -484,7 +484,7 @@ export default function AprovacaoBeneficio() {
                         ) : (
                           <>
                             <DialogHeader>
-                              <DialogTitle className="text-2xl font-bold text-[var(--verde-900)]">Aprovar solicitação</DialogTitle>
+                              <DialogTitle className="text-xl sm:text-2xl font-bold text-[var(--verde-900)]">Aprovar solicitação</DialogTitle>
                             </DialogHeader>
 
                             <div className="space-y-4">
@@ -499,7 +499,7 @@ export default function AprovacaoBeneficio() {
                                   />
                                 </div>
                                 <div>
-                                  <Label>
+                                  <Label className="text-sm">
                                     Valor com Desconto ({solicitacaoSelecionada?.beneficio.percentualDesconto}% off)
                                   </Label>
                                   <Input
@@ -512,10 +512,10 @@ export default function AprovacaoBeneficio() {
                               </div>
                             </div>
 
-                            <DialogFooter className="mt-6 text-[var(--branco)]">
+                            <DialogFooter className="mt-6 flex-col sm:flex-row gap-2">
                               <Button
                                 variant="outline"
-                                className="gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80"
+                                className="w-full sm:w-auto gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80 text-[var(--branco)]"
                                 onClick={() => setModo("detalhe")}
                               >
                                 <X size={18} />
@@ -523,7 +523,7 @@ export default function AprovacaoBeneficio() {
                               </Button>
 
                               <Button
-                                className="gap-2 text-[var(--branco)] bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80"
+                                className="w-full sm:w-auto gap-2 text-[var(--branco)] bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80"
                                 onClick={aprovarSolicitacao}
                                 disabled={isAproving}
                               >
