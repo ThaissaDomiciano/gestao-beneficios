@@ -67,12 +67,15 @@ const items = [
 ]
 
 function InnerSidebar() {
-  const { open, setOpen } = useSidebar()
+  const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar()
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const [username, setUsername] = useState<string>("")
 
-  useClickAway(ref, () => { if (open) setOpen(false) })
+  const isOpen = isMobile ? openMobile : open
+  const setIsOpen = isMobile ? setOpenMobile : setOpen
+
+  useClickAway(ref, () => { if (isOpen) setIsOpen(false) })
 
   useEffect(() => {
     const fetchUsername = () => {
@@ -110,18 +113,18 @@ function InnerSidebar() {
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => setOpen(!open)}
+        onClick={() => setIsOpen(!isOpen)}
         className="fixed top-6 left-4 z-50 lg:hidden bg-[var(--verde-900)] hover:bg-[var(--verde-800)] text-white"
       >
-        {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </Button>
 
       {/* Overlay escuro */}
       <div
-        aria-hidden={!open}
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity ${open ? "opacity-100" : "pointer-events-none opacity-0"
+        aria-hidden={!isOpen}
+        className={`fixed inset-0 z-40 bg-black/40 transition-opacity ${isOpen ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
-        onClick={() => setOpen(false)}
+        onClick={() => setIsOpen(false)}
       />
 
       <div ref={ref} className="relative z-50">
@@ -178,7 +181,7 @@ function InnerSidebar() {
                                   key={sub.title}
                                   href={sub.url}
                                   className="text-sm opacity-90 hover:opacity-100"
-                                  onClick={() => setOpen(false)}
+                                  onClick={() => setIsOpen(false)}
                                 >
                                   {sub.title}
                                 </Link>
@@ -188,7 +191,7 @@ function InnerSidebar() {
                         </Collapsible>
                       ) : (
                         <SidebarMenuButton asChild className="gap-2 [&>svg]:h-6 [&>svg]:w-6">
-                          <Link href={item.url} onClick={() => setOpen(false)}>
+                          <Link href={item.url} onClick={() => setIsOpen(false)}>
                             <item.icon />
                             <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                           </Link>

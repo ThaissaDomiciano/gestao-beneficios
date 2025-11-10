@@ -164,7 +164,193 @@ export default function PesquisarColaborador() {
             </form>
           </div>
 
-          <div className="mt-4 w-full overflow-auto max-h-[60vh] border-black border rounded-md [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
+          {/* Cards para mobile/tablet */}
+          <div className="lg:hidden mt-4 space-y-4 overflow-y-auto max-h-[60vh] overflow-x-hidden [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <Spinner />
+                <p className="mt-2">Carregando...</p>
+              </div>
+            ) : filteredColaboradores.length === 0 ? (
+              <div className="text-center py-8 border rounded-lg bg-white">
+                Nenhum colaborador encontrado
+              </div>
+            ) : (
+              filteredColaboradores.map((item) => (
+                <div
+                  key={item.matricula}
+                  className="relative border-t-4 border-t-[var(--verde-900)] rounded-lg bg-white shadow-md overflow-hidden"
+                >
+                  <div className="p-4 space-y-4">
+                    {/* Header do Card */}
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-xl font-bold text-[var(--cinza-700)]">{item.nome}</h3>
+                      <Sheet onOpenChange={(open) => {
+                        if (open && item) {
+                          setSelected(item);
+                          setSelectedTab("consultas");
+                          buscarAgendamentos(item.id);
+                          buscarBeneficios(item.id);
+                        }
+                      }}>
+                        <SheetTrigger asChild>
+                          <Button size="icon" variant="ghost">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </SheetTrigger>
+                        <SheetContent className="bg-[var(--cinza-100)] p-4">
+                          <SheetHeader>
+                            <SheetTitle className="text-[var(--verde-900)] text-xl">Histórico do Colaborador</SheetTitle>
+                          </SheetHeader>
+                          <div className="mt-6 flex gap-4">
+                            <button
+                              onClick={() => {
+                                setSelectedTab("consultas");
+                                if (selected) buscarAgendamentos(selected.id);
+                              }}
+                              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${selectedTab === "consultas"
+                                ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
+                                : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                                }`}
+                            >
+                              Consultas
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedTab("beneficios");
+                                if (selected?.id) buscarBeneficios(selected.id);
+                              }}
+                              className={`rounded-md border px-4 py-2 font-medium transition mb-4 ${selectedTab === "beneficios"
+                                ? "bg-[var(--verde-800)] text-[var(--branco)] border-[var(--verde-800)]"
+                                : "bg-[var(--branco)] text-[var(--verde-900)] border-[var(--verde-900)] hover:bg-[var(--cinza-200)]"
+                                }`}
+                            >
+                              Benefícios
+                            </button>
+                          </div>
+                          {selectedTab === "consultas" && (
+                            <div className="mt-4 overflow-y-auto pr-2">
+                              {loadingAgendamentos ? (
+                                <div className="flex flex-col items-center justify-center">
+                                  <Spinner />
+                                  <p className="mt-2">Carregando...</p>
+                                </div>
+                              ) : agendamentos.length === 0 ? (
+                                <div className="flex items-center justify-center">Nenhum agendamento encontrado</div>
+                              ) : (
+                                <div className="space-y-4">
+                                  {agendamentos.map((agendamento) => (
+                                    <div
+                                      key={agendamento.idAgendamento}
+                                      className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center"
+                                    >
+                                      <div className="flex flex-col gap-1">
+                                        <div className="flex gap-2">
+                                          <span className="font-semibold">Paciente:</span>
+                                          <p>{agendamento.dependente ? agendamento.dependente.nome : agendamento.colaborador.nome}</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                          <span className="font-semibold">Médico:</span>
+                                          <p>{agendamento.medico.nome}</p>
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col items-end gap-2">
+                                        <p className="text-sm text-[var(--cinza-700)]">
+                                          {format(new Date(agendamento.horario), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {selectedTab === "beneficios" && (
+                            <div className="mt-4 overflow-y-auto pr-2">
+                              {loadingBeneficios ? (
+                                <div className="flex flex-col items-center justify-center">
+                                  <Spinner />
+                                  <p className="mt-2">Carregando...</p>
+                                </div>
+                              ) : beneficios.length === 0 ? (
+                                <div className="flex items-center justify-center">
+                                  Nenhum benefício encontrado
+                                </div>
+                              ) : (
+                                <div className="space-y-4">
+                                  {beneficios.map((beneficio) => (
+                                    <div
+                                      key={beneficio.id}
+                                      className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center"
+                                    >
+                                      <div className="flex flex-col gap-1">
+                                        <div className="flex gap-2">
+                                          <span className="font-semibold">Benefício:</span>
+                                          <p>{beneficio.beneficio.nome}</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                          <span className="font-semibold">Beneficiado:</span>
+                                          <p>{beneficio.dependente ? beneficio.dependente.nome : beneficio.colaborador.nome}</p>
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-col items-end gap-2">
+                                        <p className="text-sm text-[var(--cinza-700)]">
+                                          {format(new Date(beneficio.dataSolicitacao), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </SheetContent>
+                      </Sheet>
+                    </div>
+
+                    {/* Matrícula */}
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center">
+                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <span>Matrícula: {item.matricula}</span>
+                    </div>
+
+                    {/* Informações em Grid */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">DATA NASCIMENTO</p>
+                        <p className="font-medium text-[var(--cinza-700)]">
+                          {new Date(item.dtNascimento).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">GÊNERO</p>
+                        <p className="font-medium text-[var(--cinza-700)]">{item.genero}</p>
+                      </div>
+                    </div>
+
+                    {/* Função e Cidade */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">FUNÇÃO</p>
+                        <p className="font-medium text-[var(--cinza-700)]">{item.funcao}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-gray-500 uppercase tracking-wide">CIDADE</p>
+                        <p className="font-medium text-[var(--cinza-700)]">{item.cidade}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Tabela para desktop */}
+          <div className="hidden lg:block mt-4 w-full overflow-auto max-h-[60vh] border-black border rounded-md [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
             <Table className="w-full relative">
               <TableHeader className="sticky top-0 z-10">
                 <TableRow className="bg-[var(--verde-800)] text-[var(--branco)] hover:bg-[var(--verde-800)]">
@@ -213,10 +399,7 @@ export default function PesquisarColaborador() {
                           }
                         }}>
                           <SheetTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                            >
+                            <Button size="icon" variant="ghost">
                               <Eye className="h-4 w-4" />
                             </Button>
                           </SheetTrigger>
