@@ -61,6 +61,7 @@ export default function AprovacaoBeneficio() {
   const BENEFICIO_ALL = "ALL";
   const [beneficioSelecionado, setBeneficioSelecionado] = useState<string>(BENEFICIO_ALL);
   const [isAproving, setIsAproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
 
   useEffect(() => {
     buscarSolicitacoes();
@@ -247,6 +248,42 @@ export default function AprovacaoBeneficio() {
     }
   }
 
+  async function rejeitarSolicitacao() {
+    if (!solicitacaoSelecionada || isRejecting) return;
+    setIsRejecting(true);
+
+    try {
+      const res = await fetch(`${api}/solicitacao/${solicitacaoSelecionada.id}`, {
+        method: "PATCH",
+        headers: getAuthHeader({ withJsonBody: true }),
+        body: JSON.stringify({ status: "RECUSADA" })
+      });
+
+      if (!res.ok) {
+        const txt = await res.text().catch(() => "");
+        throw new Error(txt || "Erro ao rejeitar solicitação");
+      }
+
+      await res.json();
+      
+      setSolicitacoes((prev) =>
+        prev.map((s) =>
+          s.id === solicitacaoSelecionada.id
+            ? { ...s, status: "RECUSADA" }
+            : s
+        )
+      );
+      
+      toast.success("Solicitação rejeitada com sucesso!");
+      setModo("detalhe");
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Não foi possível rejeitar a solicitação");
+    } finally {
+      setIsRejecting(false);
+    }
+  }
+
   return (
     <main className="">
       <div className="">
@@ -412,24 +449,36 @@ export default function AprovacaoBeneficio() {
                                     </div>
                                   ))}
                                   {documentos.length === 0 && (
-                                    <div className="text-sm text-muted-foreground">Nenhum documento gerado ainda.</div>
+                                    <div className="text-sm text-muted-foreground">Nenhum documento anexado ainda.</div>
                                   )}
                                 </div>
                               </div>
                             </div>
 
                             <DialogFooter className="mt-6 text-[var(--branco)]">
-                              <Button onClick={() => setModo("aprovar")} className="gap-2 bg-[var(--verde-900)]" variant="secondary">
+                              <Button onClick={() => setModo("aprovar")} className="gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80" variant="secondary">
                                 <CircleCheckBig size={18} className="text-[var(--branco)]" />
                                 Aprovar
                               </Button>
 
-                              <DialogClose asChild className="text-[var(--branco)]">
-                                <Button variant="outline" className="gap-2 bg-[var(--verde-900)]">
-                                  <X size={18} className="text-[var(--branco)]" />
-                                  Fechar
-                                </Button>
-                              </DialogClose>
+                              <Button 
+                                onClick={rejeitarSolicitacao}
+                                disabled={isRejecting}
+                                variant="outline" 
+                                className="gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80"
+                              >
+                                {isRejecting ? (
+                                  <>
+                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                    Rejeitando...
+                                  </>
+                                ) : (
+                                  <>
+                                    <X size={18} className="text-[var(--branco)]" />
+                                    Rejeitar
+                                  </>
+                                )}
+                              </Button>
                             </DialogFooter>
                           </>
                         ) : (
@@ -466,7 +515,7 @@ export default function AprovacaoBeneficio() {
                             <DialogFooter className="mt-6 text-[var(--branco)]">
                               <Button
                                 variant="outline"
-                                className="gap-2 bg-[var(--verde-900)]"
+                                className="gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80"
                                 onClick={() => setModo("detalhe")}
                               >
                                 <X size={18} />
@@ -474,7 +523,7 @@ export default function AprovacaoBeneficio() {
                               </Button>
 
                               <Button
-                                className="gap-2 text-[var(--branco)] bg-[var(--verde-900)]"
+                                className="gap-2 text-[var(--branco)] bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80"
                                 onClick={aprovarSolicitacao}
                                 disabled={isAproving}
                               >

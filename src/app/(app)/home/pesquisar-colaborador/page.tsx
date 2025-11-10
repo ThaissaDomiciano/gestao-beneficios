@@ -164,10 +164,10 @@ export default function PesquisarColaborador() {
             </form>
           </div>
 
-          <div className="mt-4 w-full overflow-y-hidden sm:overflow-x-auto">
-            <Table className="w-full">
-              <TableHeader>
-                <TableRow className="bg-[var(--verde-800)] text-[var(--branco)]">
+          <div className="mt-4 w-full overflow-auto max-h-[60vh] border-black border rounded-md [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:rounded-full">
+            <Table className="w-full relative">
+              <TableHeader className="sticky top-0 z-10">
+                <TableRow className="bg-[var(--verde-800)] text-[var(--branco)] hover:bg-[var(--verde-800)]">
                   <TableHead>Matrícula</TableHead>
                   <TableHead>Nome</TableHead>
                   <TableHead>Data Nascimento</TableHead>
@@ -182,7 +182,7 @@ export default function PesquisarColaborador() {
                 {loading ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center">
-                      <div className="flex flex-col items-center justify-center">
+                      <div className="flex flex-col items-center justify-center py-8">
                         <Spinner />
                         <p className="mt-2">Carregando...</p>
                       </div>
@@ -190,14 +190,14 @@ export default function PesquisarColaborador() {
                   </TableRow>
                 ) : filteredColaboradores.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={7} className="text-center py-8">
                       Nenhum colaborador encontrado
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredColaboradores.map((item) => (
-                    <TableRow key={item.matricula}>
-                      <TableCell>{item.matricula}</TableCell>
+                  filteredColaboradores.map((item, index) => (
+                    <TableRow key={item.matricula} className={index % 2 === 1 ? "bg-[#DDE9E6]" : ""}>
+                      <TableCell className="p-4">{item.matricula}</TableCell>
                       <TableCell>{item.nome}</TableCell>
                       <TableCell>{new Date(item.dtNascimento).toLocaleDateString()}</TableCell>
                       <TableCell>{item.funcao}</TableCell>
@@ -339,7 +339,6 @@ export default function PesquisarColaborador() {
                   ))
                 )}
               </TableBody>
-              <TableFooter />
             </Table>
           </div>
         </div>
