@@ -179,104 +179,142 @@ export default function CadastroMedico() {
   }
 
   return (
-    <main className="">
-      <div className="">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
-              <Stethoscope className="h-6 w-6 text-[var(--cinza-700)]" />
-            </div>
-            <h1 className="text-3xl font-semibold text-[var(--cinza-700)]">Cadastro de Médico</h1>
+  <main className="cadastro-medico-scroll">
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
+        <div className="flex items-center gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
+            <Stethoscope className="h-6 w-6 text-[var(--cinza-700)]" />
           </div>
-
-          <Dialog open={openEsp} onOpenChange={setOpenEsp}>
-            <DialogTrigger asChild>
-              <Button
-                className="bg-[var(--verde-800)] hover:bg-[var(--verde-900)] text-[var(--branco)]"
-                onClick={() => setNomeEsp("")}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Nova especialidade
-              </Button>
-            </DialogTrigger>
-
-            <DialogContent className="sm:max-w-[325px] bg-[var(--branco)] border-none">
-              <DialogHeader>
-                <DialogTitle className="text-[var(--verde-800)]">Nova Especialidade</DialogTitle>
-              </DialogHeader>
-
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!nomeEsp.trim()) {
-                    toast.error("Digite o nome da especialidade");
-                    return;
-                  }
-                  try {
-                    setSavingEsp(true);
-                    const nova = await criarEspecialidade(nomeEsp);
-                    if (nova) {
-                      setNomeEsp("");
-                      setOpenEsp(false);
-                    }
-                  } finally {
-                    setSavingEsp(false);
-                  }
-                }}
-                className="grid gap-3"
-              >
-                <Label htmlFor="especialidade" className="text-[var(--cinza-800)]">Especialidade</Label>
-                <Input
-                  id="especialidade"
-                  name="especialidade"
-                  placeholder="Digite a especialidade"
-                  value={nomeEsp}
-                  onChange={(e) => setNomeEsp(e.target.value)}
-                />
-                <DialogFooter className="justify-center sm:justify-center mt-2">
-                  <Button
-                    type="submit"
-                    disabled={savingEsp}
-                    className="bg-[var(--verde-800)] text-[var(--cinza-200)]"
-                  >
-                    {savingEsp ? "Salvando..." : (<><Plus className="mr-2 h-4" /> Confirmar</>)}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <h1 className="text-3xl font-semibold text-[var(--cinza-700)]">
+            Cadastro de Médico
+          </h1>
         </div>
 
-        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-12 shadow-sm">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <div className="lg:col-span-4 col-span-12">
-                  <FormField name="nome" control={form.control} render={({ field }) => (
+        <Dialog open={openEsp} onOpenChange={setOpenEsp}>
+          <DialogTrigger asChild>
+            <Button
+              className="bg-[var(--verde-800)] hover:bg-[var(--verde-900)] text-[var(--branco)]"
+              onClick={() => setNomeEsp("")}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Nova especialidade
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent className="sm:max-w-[325px] bg-[var(--branco)] border-none">
+            <DialogHeader>
+              <DialogTitle className="text-[var(--verde-800)]">
+                Nova Especialidade
+              </DialogTitle>
+            </DialogHeader>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!nomeEsp.trim()) {
+                  toast.error("Digite o nome da especialidade");
+                  return;
+                }
+                try {
+                  setSavingEsp(true);
+                  const nova = await criarEspecialidade(nomeEsp);
+                  if (nova) {
+                    setNomeEsp("");
+                    setOpenEsp(false);
+                  }
+                } finally {
+                  setSavingEsp(false);
+                }
+              }}
+              className="grid gap-3"
+            >
+              <Label
+                htmlFor="especialidade"
+                className="text-[var(--cinza-800)]"
+              >
+                Especialidade
+              </Label>
+              <Input
+                id="especialidade"
+                name="especialidade"
+                placeholder="Digite a especialidade"
+                value={nomeEsp}
+                onChange={(e) => setNomeEsp(e.target.value)}
+              />
+              <DialogFooter className="justify-center sm:justify-center mt-2">
+                <Button
+                  type="submit"
+                  disabled={savingEsp}
+                  className="bg-[var(--verde-800)] text-[var(--cinza-200)]"
+                >
+                  {savingEsp ? (
+                    "Salvando..."
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4" /> Confirmar
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-4 md:p-8 shadow-sm overflow-x-hidden">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-8 sm:space-y-10"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
+              <div className="lg:col-span-4 col-span-12 min-w-0">
+                <FormField
+                  name="nome"
+                  control={form.control}
+                  render={({ field }) => (
                     <FormItem className="space-y-2">
                       <FormLabel>Nome do Médico</FormLabel>
                       <FormControl>
-                        <Input className="w-full h-11" placeholder="Digite o nome do médico" {...field} />
+                        <Input
+                          className="w-full h-11"
+                          placeholder="Digite o nome do médico"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
-                  )} />
-                </div>
+                  )}
+                />
+              </div>
 
-                <div className="lg:col-span-4 col-span-12">
-                  <FormField name="email" control={form.control} render={({ field }) => (
+              <div className="lg:col-span-4 col-span-12 min-w-0">
+                <FormField
+                  name="email"
+                  control={form.control}
+                  render={({ field }) => (
                     <FormItem className="space-y-2">
                       <FormLabel>E-mail do Médico</FormLabel>
                       <FormControl>
-                        <Input type="email" className="w-full h-11" placeholder="Digite o e-mail do médico" {...field} />
+                        <Input
+                          type="email"
+                          className="w-full h-11"
+                          placeholder="Digite o e-mail do médico"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
-                  )} />
-                </div>
+                  )}
+                />
+              </div>
 
-                <div className="lg:col-span-4 col-span-12">
-                  <FormField name="id_especialidade" control={form.control} render={({ field }) => (
+              <div className="lg:col-span-4 col-span-12 min-w-0">
+                <FormField
+                  name="id_especialidade"
+                  control={form.control}
+                  render={({ field }) => (
                     <FormItem className="space-y-2">
                       <FormLabel>Especialidade</FormLabel>
 
@@ -287,11 +325,14 @@ export default function CadastroMedico() {
                           </SelectTrigger>
                         </FormControl>
 
-                        <SelectContent className='bg-[var(--cinza-200)]'>
+                        <SelectContent className="bg-[var(--cinza-200)] max-w-full">
                           {especialidades
                             .filter((e) => !!e)
                             .map((e) => {
-                              const rawId = (e as any).id ?? (e as any).id_especialidade ?? e.nome;
+                              const rawId =
+                                (e as any).id ??
+                                (e as any).id_especialidade ??
+                                e.nome;
                               const idStr = String(rawId);
                               return (
                                 <SelectItem key={idStr} value={idStr}>
@@ -304,69 +345,105 @@ export default function CadastroMedico() {
 
                       <FormMessage />
                     </FormItem>
-                  )} />
-                </div>
+                  )}
+                />
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {(["horaEntrada", "horaPausa", "horaVolta", "horaSaida"] as const).map((n, i) => (
-                  <div key={n} className="lg:col-span-3 col-span-12">
-                    <FormField name={n} control={form.control} render={({ field }) => (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
+              {(
+                ["horaEntrada", "horaPausa", "horaVolta", "horaSaida"] as const
+              ).map((n, i) => (
+                <div key={n} className="lg:col-span-3 col-span-12 min-w-0">
+                  <FormField
+                    name={n}
+                    control={form.control}
+                    render={({ field }) => (
                       <FormItem className="space-y-2">
-                        <FormLabel>{["Hora Entrada", "Hora Pausa", "Hora Volta", "Hora Saída"][i]}</FormLabel>
+                        <FormLabel>
+                          {
+                            [
+                              "Hora Entrada",
+                              "Hora Pausa",
+                              "Hora Volta",
+                              "Hora Saída",
+                            ][i]
+                          }
+                        </FormLabel>
                         <FormControl>
                           <Input type="time" className="w-full h-11" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
-                    )} />
-                  </div>
-                ))}
-              </div>
+                    )}
+                  />
+                </div>
+              ))}
+            </div>
 
-              <FormField name="disponibilidade" control={form.control} render={() => (
+            <FormField
+              name="disponibilidade"
+              control={form.control}
+              render={() => (
                 <FormItem className="space-y-3">
                   <FormLabel>Disponibilidade</FormLabel>
-                  <div className="flex flex-wrap gap-x-8 gap-y-4">
+                  <div className="flex flex-wrap gap-x-6 gap-y-3">
                     {dias.map((label, idx) => (
-                      <FormField key={label} name="disponibilidade" control={form.control} render={({ field }) => {
-                        const checked: boolean = field.value?.includes(idx);
-                        return (
-                          <div className="flex items-center gap-2">
-                            <FormControl>
-                              <Checkbox
-                                checked={checked}
-                                onCheckedChange={(v) => {
-                                  const on = v === true;
-                                  if (on && !checked) field.onChange([...(field.value ?? []), idx]);
-                                  if (!on && checked) field.onChange(field.value.filter((n: number) => n !== idx));
-                                }}
-                                className="data-[state=checked]:bg-[var(--verde-700)] data-[state=checked]:border-[var(--verde-800)]"
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal">{label}</FormLabel>
-                          </div>
-                        );
-                      }} />
+                      <FormField
+                        key={label}
+                        name="disponibilidade"
+                        control={form.control}
+                        render={({ field }) => {
+                          const checked: boolean = field.value?.includes(idx);
+                          return (
+                            <div className="flex items-center gap-2">
+                              <FormControl>
+                                <Checkbox
+                                  checked={checked}
+                                  onCheckedChange={(v) => {
+                                    const on = v === true;
+                                    if (on && !checked)
+                                      field.onChange([
+                                        ...(field.value ?? []),
+                                        idx,
+                                      ]);
+                                    if (!on && checked)
+                                      field.onChange(
+                                        field.value.filter(
+                                          (n: number) => n !== idx
+                                        )
+                                      );
+                                  }}
+                                  className="data-[state=checked]:bg-[var(--verde-700)] data-[state=checked]:border-[var(--verde-800)]"
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {label}
+                              </FormLabel>
+                            </div>
+                          );
+                        }}
+                      />
                     ))}
                   </div>
                   <FormMessage />
                 </FormItem>
-              )} />
+              )}
+            />
 
-              <div className="pt-2 flex justify-center">
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="h-11 px-12 bg-[var(--verde-800)] hover:bg-[var(--verde-900)] text-[var(--branco)]"
-                >
-                  {loading ? "Salvando..." : "Confirmar"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
+            <div className="pt-2 flex justify-center">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="h-11 px-10 sm:px-12 bg-[var(--verde-800)] hover:bg-[var(--verde-900)] text-[var(--branco)]"
+              >
+                {loading ? "Salvando..." : "Confirmar"}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
-    </main>
-  );
+    </div>
+  </main>
+);
 }
