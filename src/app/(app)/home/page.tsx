@@ -194,8 +194,8 @@ export default function HomePage() {
   return String(valor);
 };
 
-  return (
-    <main>
+   return (
+    <main className="home-mobile-scroll">
       <div>
         <header className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
           <div className="flex items-center gap-3">
@@ -253,32 +253,32 @@ export default function HomePage() {
             </div>
           </div>
 
-           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <CardEstatistica
-        titulo="Benefícios Pendentes"
-        valor={renderValor(kpis.solicitacoesPendentes)}
-        Icone={FileText}
-        loading={loading}
-      />
-      <CardEstatistica
-        titulo="Documentos Cancelados"
-        valor={renderValor(kpis.solicitacoesRecusadas)}
-        Icone={FileX}
-        loading={loading}
-      />
-      <CardEstatistica
-        titulo="Pendente Assinatura"
-        valor={renderValor(kpis.solicitacoesPendenteAssinatura)}
-        Icone={CalendarClock}
-        loading={loading}
-      />
-      <CardEstatistica
-        titulo="Consultas do Mês"
-        valor={renderValor(kpis.consultasDoMes)}
-        Icone={CalendarCheck}
-        loading={loading}
-      />
-    </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <CardEstatistica
+              titulo="Benefícios Pendentes"
+              valor={renderValor(kpis.solicitacoesPendentes)}
+              Icone={FileText}
+              loading={loading}
+            />
+            <CardEstatistica
+              titulo="Documentos Cancelados"
+              valor={renderValor(kpis.solicitacoesRecusadas)}
+              Icone={FileX}
+              loading={loading}
+            />
+            <CardEstatistica
+              titulo="Pendente Assinatura"
+              valor={renderValor(kpis.solicitacoesPendenteAssinatura)}
+              Icone={CalendarClock}
+              loading={loading}
+            />
+            <CardEstatistica
+              titulo="Consultas do Mês"
+              valor={renderValor(kpis.consultasDoMes)}
+              Icone={CalendarCheck}
+              loading={loading}
+            />
+          </div>
 
           <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
             <div className="h-80 w-full rounded-xl border border-[var(--verde-900)] bg-white/60 p-4 flex flex-col">
@@ -388,3 +388,4 @@ export default function HomePage() {
     </main>
   );
 }
+

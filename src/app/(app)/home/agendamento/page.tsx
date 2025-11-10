@@ -448,132 +448,154 @@ export default function Agendamento() {
   }
 
   return (
-    <main className="">
-      <div className="">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
-              <CalendarDays />
-            </div>
-            <h1 className="text-3xl font-semibold text-[var(--cinza-700)]">Agendamento</h1>
+  <main className="agendamento-scroll">
+    <div>
+      {/* HEADER */}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
+        <div className="flex items-center gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
+            <CalendarDays />
+          </div>
+          <h1 className="text-3xl font-semibold text-[var(--cinza-700)]">
+            Agendamento
+          </h1>
+        </div>
+      </div>
+
+      {/* CARD PRINCIPAL */}
+      <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-4 md:p-12 shadow-sm">
+        {/* FILTROS */}
+        <div className="flex flex-wrap items-end gap-4 w-full mb-6">
+          <div className="flex flex-col gap-2 w-full sm:w-[320px]">
+            <Label htmlFor="colaborador-filter" className="px-1">
+              Colaborador
+            </Label>
+            <Select
+              value={colaboradorId}
+              onValueChange={(val) => setColaboradorId(val)}
+            >
+              <SelectTrigger id="colaborador-filter" className="w-full">
+                <SelectValue placeholder="Selecione o colaborador" />
+              </SelectTrigger>
+              <SelectContent className="w-full sm:w-[320px] bg-[var(--cinza-200)]">
+                <SelectGroup>
+                  <SelectLabel>Todos</SelectLabel>
+                  <SelectItem value="__all__">Todos os colaboradores</SelectItem>
+                </SelectGroup>
+                {colaboradores.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel>Colaboradores</SelectLabel>
+                    {colaboradores.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.nome} - {c.matricula}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-2 w-full sm:w-[240px]">
+            <Label htmlFor="status-filter" className="px-1">
+              Status
+            </Label>
+            <Select
+              value={statusFilter}
+              onValueChange={(val) => setStatusFilter(val)}
+            >
+              <SelectTrigger id="status-filter" className="w-full">
+                <SelectValue placeholder="Selecione o status" />
+              </SelectTrigger>
+              <SelectContent className="w-full sm:w-[240px] bg-[var(--cinza-200)]">
+                <SelectGroup>
+                  <SelectLabel>Todos</SelectLabel>
+                  <SelectItem value="__all__">Todos</SelectItem>
+                </SelectGroup>
+                <SelectGroup>
+                  <SelectLabel>Status</SelectLabel>
+                  <SelectItem value="AGENDADO">AGENDADO</SelectItem>
+                  <SelectItem value="CANCELADO">CANCELADO</SelectItem>
+                  <SelectItem value="CONCLUIDO">CONCLUIDO</SelectItem>
+                  <SelectItem value="FALTOU">FALTOU</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
-        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-12 shadow-sm">
-          {/* Filtros */}
-          <div className="flex items-end gap-4 w-full mb-6 flex-wrap">
-            <div className="flex flex-col gap-2 w-[320px]">
-              <Label htmlFor="colaborador-filter" className="px-1">Colaborador</Label>
-              <Select value={colaboradorId} onValueChange={(val) => setColaboradorId(val)}>
-                <SelectTrigger id="colaborador-filter" className="w-[320px]">
-                  <SelectValue placeholder="Selecione o colaborador" />
-                </SelectTrigger>
-                <SelectContent className="w-[320px] bg-[var(--cinza-200)]">
-                  <SelectGroup>
-                    <SelectLabel>Todos</SelectLabel>
-                    <SelectItem value="__all__">Todos os colaboradores</SelectItem>
-                  </SelectGroup>
-                  {colaboradores.length > 0 && (
-                    <SelectGroup>
-                      <SelectLabel>Colaboradores</SelectLabel>
-                      {colaboradores.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.nome} - {c.matricula}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-2 w-[240px]">
-              <Label htmlFor="status-filter" className="px-1">Status</Label>
-              <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val)}>
-                <SelectTrigger id="status-filter" className="w-[240px]">
-                  <SelectValue placeholder="Selecione o status" />
-                </SelectTrigger>
-                <SelectContent className="w-[240px] bg-[var(--cinza-200)]">
-                  <SelectGroup>
-                    <SelectLabel>Todos</SelectLabel>
-                    <SelectItem value="__all__">Todos</SelectItem>
-                  </SelectGroup>
-                  <SelectGroup>
-                    <SelectLabel>Status</SelectLabel>
-                    <SelectItem value="AGENDADO">AGENDADO</SelectItem>
-                    <SelectItem value="CANCELADO">CANCELADO</SelectItem>
-                    <SelectItem value="CONCLUIDO">CONCLUIDO</SelectItem>
-                    <SelectItem value="FALTOU">FALTOU</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
+        {/* CALENDÁRIO + LISTA */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* CALENDÁRIO */}
+          <div className="flex justify-center lg:justify-start">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              className="rounded-md border shadow-sm w-full max-w-[400px]"
+              captionLayout="dropdown"
+              modifiers={{
+                selected: (day) => (date ? day.getTime() === date.getTime() : false),
+              }}
+              modifiersStyles={{
+                selected: {
+                  backgroundColor: "var(--verde-900)",
+                  color: "var(--branco)",
+                  fontWeight: "bold",
+                  borderRadius: "4px",
+                },
+              }}
+            />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={setDate}
-                className="rounded-md border shadow-sm w-[400px]"
-                captionLayout="dropdown"
-                modifiers={{
-                  selected: (day) => date ? day.getTime() === date.getTime() : false
-                }}
-                modifiersStyles={{
-                  selected: {
-                    backgroundColor: 'var(--verde-900)',
-                    color: 'var(--branco)',
-                    fontWeight: 'bold',
-                    borderRadius: '4px'
-                  }
-                }}
-              />
-            </div>
-
-            <div className="space-y-4">
-              {loading ? (
-                <div className="flex flex-col items-center justify-center">
-                  <Spinner />
-                  <p className="mt-2">Carregando...</p>
-                </div>
-              ) : filteredAgendamentos.length === 0 ? (
-                <div>Nenhum agendamento encontrado</div>
-              ) : (
-                <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3">
-                  {filteredAgendamentos.map((agendamento) => (
-                    <div
-                      key={agendamento.idAgendamento}
-                      className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center"
-                    >
-                      <div className="flex flex-col gap-1">
-                        <div className="flex gap-2">
-                          <span className="font-semibold">Paciente:</span>
-                          <p>{agendamento.dependente ? agendamento.dependente.nome : agendamento.colaborador.nome}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <span className="font-semibold">Médico:</span>
-                          <p>{agendamento.medico.nome}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-end gap-2">
-                        <p className="text-sm text-[var(--cinza-700)]">
-                          {ddmmyyyyHHmm(agendamento.horario)}
+          {/* LISTA DE AGENDAMENTOS */}
+          <div className="space-y-4">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center">
+                <Spinner />
+                <p className="mt-2">Carregando...</p>
+              </div>
+            ) : filteredAgendamentos.length === 0 ? (
+              <div>Nenhum agendamento encontrado</div>
+            ) : (
+              <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3">
+                {filteredAgendamentos.map((agendamento) => (
+                  <div
+                    key={agendamento.idAgendamento}
+                    className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center gap-4"
+                  >
+                    <div className="flex flex-col gap-1">
+                      <div className="flex flex-wrap gap-2">
+                        <span className="font-semibold">Paciente:</span>
+                        <p>
+                          {agendamento.dependente
+                            ? agendamento.dependente.nome
+                            : agendamento.colaborador.nome}
                         </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="font-semibold">Médico:</span>
+                        <p>{agendamento.medico.nome}</p>
+                      </div>
+                    </div>
 
-                        <Dialog>
-                          <DialogTrigger
-                            asChild
-                            className="bg-[var(--verde-900)] text-[var(--branco)]"
-                            onClick={() => {
-                              setAgendamentoSelecionado(agendamento);
-                              setModo("detalhe");
-                            }}
-                          >
-                            <Button variant="outline">Detalhar</Button>
-                          </DialogTrigger>
+                    <div className="flex flex-col items-end gap-2">
+                      <p className="text-sm text-[var(--cinza-700)]">
+                        {ddmmyyyyHHmm(agendamento.horario)}
+                      </p>
+
+                      {/* DIALOG DETALHES (igual ao seu) */}
+                      <Dialog>
+                        <DialogTrigger
+                          asChild
+                          className="bg-[var(--verde-900)] text-[var(--branco)]"
+                          onClick={() => {
+                            setAgendamentoSelecionado(agendamento);
+                            setModo("detalhe");
+                          }}
+                        >
+                          <Button variant="outline">Detalhar</Button>
+                        </DialogTrigger>
 
                           <DialogContent className="sm:max-w-[720px] bg-[var(--cinza-200)]">
                             <DialogHeader>
