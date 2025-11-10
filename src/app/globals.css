@@ -76,3 +76,37 @@ body {
     --tw-ring-color: var(--sidebar-ring);
   }
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (max-width: 1023px) {
+  .home-mobile-scroll,
+  .cadastro-medico-scroll,
+  .cadastro-beneficio-scroll,
+  .agendamento-scroll {
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .home-mobile-scroll::-webkit-scrollbar,
+  .cadastro-medico-scroll::-webkit-scrollbar,
+  .cadastro-beneficio-scroll::-webkit-scrollbar,
+  .agendamento-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-mobile-scroll,
+  .cadastro-medico-scroll,
+  .cadastro-beneficio-scroll,
+  .agendamento-scroll {
+    -ms-overflow-style: none; /* IE/Edge antigo */
+    scrollbar-width: none;    /* Firefox */
+  }
+}
+

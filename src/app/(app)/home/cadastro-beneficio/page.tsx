@@ -70,22 +70,26 @@ export default function CadastroBeneficio() {
     }
   }
 
-  return (
-    <main className="">
-      <div className="">
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
-          <div className="flex items-center gap-3">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
-              <ClipboardCheck className="h-6 w-6 text-[var(--cinza-700)]" />
-            </div>
-            <h1 className="text-3xl font-semibold text-[var(--cinza-700)]">Cadastro de Benefício</h1>
+return (
+  <main className="cadastro-beneficio-scroll">
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
+        <div className="flex items-center gap-3">
+          <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
+            <ClipboardCheck className="h-6 w-6 text-[var(--cinza-700)]" />
           </div>
+          <h1 className="text-3xl font-semibold text-[var(--cinza-700)]">
+            Cadastro de Benefício
+          </h1>
         </div>
+      </div>
 
-        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-8 md:p-12 shadow-sm">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
-              <div className="flex gap-4">
+      <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-4 md:p-8 shadow-sm">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 sm:space-y-10">
+           
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="w-full">
                 <FormField
                   name="nome"
                   control={form.control}
@@ -93,11 +97,18 @@ export default function CadastroBeneficio() {
                     <FormItem className="space-y-2">
                       <FormLabel>Nome</FormLabel>
                       <FormControl>
-                        <Input className="w-200 h-11" placeholder="Digite o nome do benefício" {...field} />
+                        <Input
+                          className="w-full h-11"
+                          placeholder="Digite o nome do benefício"
+                          {...field}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <div className="w-full">
                 <FormField
                   name="percentualDesconto"
                   control={form.control}
@@ -109,7 +120,7 @@ export default function CadastroBeneficio() {
                           type="number"
                           min="1"
                           max="100"
-                          className="w-90 h-11"
+                          className="w-full h-11"
                           placeholder="Digite a porcentagem do desconto"
                           name={field.name}
                           ref={field.ref}
@@ -122,35 +133,41 @@ export default function CadastroBeneficio() {
                   )}
                 />
               </div>
+            </div>
 
-              <div>
-                <FormField
-                  name="descricao"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Descrição</FormLabel>
-                      <FormControl>
-                        <Textarea className="w-full h-32" placeholder="Digite a descrição do benefício" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <div>
+              <FormField
+                name="descricao"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel>Descrição</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        className="w-full h-32"
+                        placeholder="Digite a descrição do benefício"
+                        {...field}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
 
-              <div className="pt-2 flex justify-center">
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="h-11 px-12 bg-[var(--verde-800)] hover:bg-[var(--verde-900)] text-[var(--branco)]"
-                >
-                  {loading ? "Salvando..." : "Confirmar"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
+            <div className="pt-2 flex justify-center">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="h-11 px-10 sm:px-12 bg-[var(--verde-800)] hover:bg-[var(--verde-900)] text-[var(--branco)]"
+              >
+                {loading ? "Salvando..." : "Confirmar"}
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
-    </main>
-  );
+    </div>
+  </main>
+);
+
 }
