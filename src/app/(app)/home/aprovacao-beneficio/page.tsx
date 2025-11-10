@@ -449,7 +449,7 @@ export default function AprovacaoBeneficio() {
                                     </div>
                                   ))}
                                   {documentos.length === 0 && (
-                                    <div className="text-sm text-muted-foreground">Nenhum documento gerado ainda.</div>
+                                    <div className="text-sm text-muted-foreground">Nenhum documento anexado ainda.</div>
                                   )}
                                 </div>
                               </div>
