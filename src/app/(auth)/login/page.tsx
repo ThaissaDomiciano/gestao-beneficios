@@ -16,6 +16,8 @@ import {
   CardDescription
 } from '@/components/ui/card';
  
+export const dynamic = "force-dynamic";
+
 const schema = z.object({
   matricula: z.string().min(1, 'Informe a matrícula'),
   senha: z.string().min(1, 'Informe a senha'),
