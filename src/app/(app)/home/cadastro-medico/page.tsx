@@ -40,13 +40,13 @@ import {
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
 const dias = [
+  "Domingo",
   "Segunda",
   "Terça",
   "Quarta",
   "Quinta",
   "Sexta",
   "Sábado",
-  "Domingo",
 ] as const;
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
