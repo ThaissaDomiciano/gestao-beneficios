@@ -11,7 +11,7 @@ O sistema substitui controles manuais, planilhas e conversas dispersas, trazendo
 
 - Aprovação, recusa e observações.
 
-- Histórico e status atualizado em tempo real (consumo de API).
+- Histórico e status atualizado em tempo real.
 
 # 📅 Gestão de Atendimentos
 
