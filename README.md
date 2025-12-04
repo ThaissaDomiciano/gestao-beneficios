@@ -4,73 +4,72 @@ Este repositório contém a interface web utilizada pelo setor de Gestão de Ben
 
 O sistema substitui controles manuais, planilhas e conversas dispersas, trazendo mais agilidade e rastreabilidade ao processo de gestão.
 
-🚀 Funcionalidades Principais
-📂 Gestão de Documentos
+# 🚀 Funcionalidades Principais
+# 📂 Gestão de Documentos
 
-Visualização de documentos enviados pelos colaboradores.
+- Visualização de documentos enviados pelos colaboradores.
 
-Aprovação, recusa e observações.
+- Aprovação, recusa e observações.
 
-Histórico e status atualizado em tempo real (consumo de API).
+- Histórico e status atualizado em tempo real (consumo de API).
 
-📅 Gestão de Atendimentos
+# 📅 Gestão de Atendimentos
 
-Lista completa de atendimentos solicitados.
+- Lista completa de atendimentos solicitados.
 
-Cadastro e edição de atendimentos.
+- Cadastro e edição de atendimentos.
 
-Controle de status (pendente, concluído, cancelado).
+- Controle de status (pendente, concluído, cancelado).
 
-👥 Gestão de Colaboradores
+# 👥 Gestão de Colaboradores
 
-Listagem geral de colaboradores.
+- Listagem geral de colaboradores.
 
-Busca rápida por nome, matrícula ou setor.
+- Busca rápida por nome, matrícula ou setor.
 
-Visualização detalhada das informações.
+- Visualização detalhada das informações.
 
-🗂 Gestão de Benefícios
+# 🗂 Gestão de Benefícios
 
-Controle centralizado de solicitações relacionadas a benefícios.
+- Controle centralizado de solicitações relacionadas a benefícios.
 
-Acompanhamento das ocorrências (entregas, devoluções, validações).
+- Acompanhamento das ocorrências (entregas, devoluções, validações).
 
-Registro de decisões administrativas.
+- Registro de decisões administrativas.
 
-📊 Dashboard (quando aplicável)
+# 📊 Dashboard (quando aplicável)
 
-Indicadores gerais.
+- Indicadores gerais.
 
-Contagem de solicitações por status.
+- Contagem de solicitações por status.
 
-Visão rápida para o gestor.
+- Visão rápida para o gestor.
 
-🔧 Tecnologias Utilizadas
-Framework
+# 🔧 Tecnologias Utilizadas
+- Framework
 
 Next.js 
 
-Estilização
+- Estilização
 
 Tailwind CSS
 
 Shadcn/UI
 
-Como Rodar o Projeto
 # Instalar dependências
 npm install
 
 # Rodar em desenvolvimento
 npm run dev
 
-🎯 Objetivo do Sistema
+# 🎯 Objetivo do Sistema
 
-Oferecer uma ferramenta web sólida para o setor de Benefícios, garantindo:
+- Oferecer uma ferramenta web sólida para o setor de Benefícios, garantindo:
 
-maior organização das solicitações internas;
+- Maior organização das solicitações internas;
 
-redução de erros e retrabalho;
+- Redução de erros e retrabalho;
 
-padronização nos processos;
+- Padronização nos processos;
 
-mais agilidade no atendimento ao colaborador.
+- Mais agilidade no atendimento ao colaborador.
