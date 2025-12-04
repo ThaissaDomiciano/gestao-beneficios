@@ -1,4 +1,4 @@
-Gestão de Benefícios — Front-end Web (Painel Administrativo)
+# Gestão de Benefícios — Front-end Web (Painel Administrativo)
 
 Este repositório contém a interface web utilizada pelo setor de Gestão de Benefícios para organizar atendimentos, analisar documentos enviados pelos colaboradores, registrar autorizações, acompanhar solicitações e manter o fluxo interno de trabalho centralizado.
 
