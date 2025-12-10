@@ -21,6 +21,7 @@ import { Spinner } from "@/components/ui/spinner";
 import {
   Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue
 } from "@/components/ui/select";
+import { formatarTexto } from "@/_helpers/textFormat";
 
 const api = process.env.NEXT_PUBLIC_BACKEND_URL as string;
 
@@ -403,7 +404,7 @@ export default function Agendamento() {
 
 
     } catch {
-      toast.error("Não foi possível cancelar o agendamento.");
+      toast.error("Não foi possível cancelar o agendamento. \nAgendamentos só podem ser alterados ou cancelados com no mínimo 24 horas de antecedência.");
       setIsCancelLoading(false);
       return;
     }
@@ -448,154 +449,167 @@ export default function Agendamento() {
   }
 
   return (
-  <main className="agendamento-scroll">
-    <div>
-      {/* HEADER */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
-        <div className="flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
-            <CalendarDays />
+    <main className="agendamento-scroll">
+      <div>
+        {/* HEADER */}
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--verde-900)] bg-[var(--cinza-100)] px-8 py-6">
+          <div className="flex items-center gap-3">
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--verde-600)] border-2 border-[var(--verde-900)]">
+              <CalendarDays />
+            </div>
+            <h1 className="text-3xl font-semibold text-[var(--cinza-700)]">
+              Agendamento
+            </h1>
           </div>
-          <h1 className="text-3xl font-semibold text-[var(--cinza-700)]">
-            Agendamento
-          </h1>
         </div>
-      </div>
 
-      {/* CARD PRINCIPAL */}
-      <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-4 md:p-12 shadow-sm">
-        {/* FILTROS */}
-        <div className="flex flex-wrap items-end gap-4 w-full mb-6">
-          <div className="flex flex-col gap-2 w-full sm:w-[320px]">
-            <Label htmlFor="colaborador-filter" className="px-1">
-              Colaborador
-            </Label>
-            <Select
-              value={colaboradorId}
-              onValueChange={(val) => setColaboradorId(val)}
-            >
-              <SelectTrigger id="colaborador-filter" className="w-full">
-                <SelectValue placeholder="Selecione o colaborador" />
-              </SelectTrigger>
-              <SelectContent className="w-full sm:w-[320px] bg-[var(--cinza-200)]">
-                <SelectGroup>
-                  <SelectLabel>Todos</SelectLabel>
-                  <SelectItem value="__all__">Todos os colaboradores</SelectItem>
-                </SelectGroup>
-                {colaboradores.length > 0 && (
+        {/* CARD PRINCIPAL */}
+        <div className="mt-8 w-full rounded-2xl border border-[var(--verde-900)] bg-[var(--cinza-100)] p-4 md:p-12 shadow-sm">
+          {/* FILTROS */}
+          <div className="flex flex-wrap items-end gap-4 w-full mb-6">
+            <div className="flex flex-col gap-2 w-full sm:w-[320px]">
+              <Label htmlFor="colaborador-filter" className="px-1">
+                Colaborador
+              </Label>
+              <Select
+                value={colaboradorId}
+                onValueChange={(val) => setColaboradorId(val)}
+              >
+                <SelectTrigger id="colaborador-filter" className="w-full">
+                  <SelectValue placeholder="Selecione o colaborador" />
+                </SelectTrigger>
+                <SelectContent className="w-full sm:w-[320px] bg-[var(--cinza-200)]">
                   <SelectGroup>
-                    <SelectLabel>Colaboradores</SelectLabel>
-                    {colaboradores.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.nome} - {c.matricula}
-                      </SelectItem>
-                    ))}
+                    <SelectLabel>Todos</SelectLabel>
+                    <SelectItem value="__all__">Todos os colaboradores</SelectItem>
                   </SelectGroup>
-                )}
-              </SelectContent>
-            </Select>
+                  {colaboradores.length > 0 && (
+                    <SelectGroup>
+                      <SelectLabel>Colaboradores</SelectLabel>
+                      {colaboradores.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.nome} - {c.matricula}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-2 w-full sm:w-[240px]">
+              <Label htmlFor="status-filter" className="px-1">
+                Status
+              </Label>
+              <Select
+                value={statusFilter}
+                onValueChange={(val) => setStatusFilter(val)}
+              >
+                <SelectTrigger id="status-filter" className="w-full">
+                  <SelectValue placeholder="Selecione o status" />
+                </SelectTrigger>
+                <SelectContent className="w-full sm:w-[240px] bg-[var(--cinza-200)]">
+                  <SelectGroup>
+                    <SelectLabel>Todos</SelectLabel>
+                    <SelectItem value="__all__">Todos</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Status</SelectLabel>
+                    <SelectItem value="AGENDADO">AGENDADO</SelectItem>
+                    <SelectItem value="CANCELADO">CANCELADO</SelectItem>
+                    <SelectItem value="CONCLUIDO">CONCLUIDO</SelectItem>
+                    <SelectItem value="FALTOU">FALTOU</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-2 w-full sm:w-[240px]">
-            <Label htmlFor="status-filter" className="px-1">
-              Status
-            </Label>
-            <Select
-              value={statusFilter}
-              onValueChange={(val) => setStatusFilter(val)}
-            >
-              <SelectTrigger id="status-filter" className="w-full">
-                <SelectValue placeholder="Selecione o status" />
-              </SelectTrigger>
-              <SelectContent className="w-full sm:w-[240px] bg-[var(--cinza-200)]">
-                <SelectGroup>
-                  <SelectLabel>Todos</SelectLabel>
-                  <SelectItem value="__all__">Todos</SelectItem>
-                </SelectGroup>
-                <SelectGroup>
-                  <SelectLabel>Status</SelectLabel>
-                  <SelectItem value="AGENDADO">AGENDADO</SelectItem>
-                  <SelectItem value="CANCELADO">CANCELADO</SelectItem>
-                  <SelectItem value="CONCLUIDO">CONCLUIDO</SelectItem>
-                  <SelectItem value="FALTOU">FALTOU</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          {/* CALENDÁRIO + LISTA */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* CALENDÁRIO */}
+            <div className="flex justify-center lg:justify-start">
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="rounded-md border shadow-sm w-full max-w-[400px]"
+                captionLayout="dropdown"
+                modifiers={{
+                  selected: (day) => (date ? day.getTime() === date.getTime() : false),
+                }}
+                modifiersStyles={{
+                  selected: {
+                    backgroundColor: "var(--verde-900)",
+                    color: "var(--branco)",
+                    fontWeight: "bold",
+                    borderRadius: "4px",
+                  },
+                }}
+              />
+            </div>
 
-        {/* CALENDÁRIO + LISTA */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* CALENDÁRIO */}
-          <div className="flex justify-center lg:justify-start">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              className="rounded-md border shadow-sm w-full max-w-[400px]"
-              captionLayout="dropdown"
-              modifiers={{
-                selected: (day) => (date ? day.getTime() === date.getTime() : false),
-              }}
-              modifiersStyles={{
-                selected: {
-                  backgroundColor: "var(--verde-900)",
-                  color: "var(--branco)",
-                  fontWeight: "bold",
-                  borderRadius: "4px",
-                },
-              }}
-            />
-          </div>
-
-          {/* LISTA DE AGENDAMENTOS */}
-          <div className="space-y-4">
-            {loading ? (
-              <div className="flex flex-col items-center justify-center">
-                <Spinner />
-                <p className="mt-2">Carregando...</p>
-              </div>
-            ) : filteredAgendamentos.length === 0 ? (
-              <div>Nenhum agendamento encontrado</div>
-            ) : (
-              <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3">
-                {filteredAgendamentos.map((agendamento) => (
-                  <div
-                    key={agendamento.idAgendamento}
-                    className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center gap-4"
-                  >
-                    <div className="flex flex-col gap-1">
-                      <div className="flex flex-wrap gap-2">
-                        <span className="font-semibold">Paciente:</span>
-                        <p>
-                          {agendamento.dependente
-                            ? agendamento.dependente.nome
-                            : agendamento.colaborador.nome}
-                        </p>
+            {/* LISTA DE AGENDAMENTOS */}
+            <div className="space-y-4">
+              {loading ? (
+                <div className="flex flex-col items-center justify-center">
+                  <Spinner />
+                  <p className="mt-2">Carregando...</p>
+                </div>
+              ) : filteredAgendamentos.length === 0 ? (
+                <div>Nenhum agendamento encontrado</div>
+              ) : (
+                <div className="max-h-[500px] overflow-y-auto pr-2 space-y-3">
+                  {filteredAgendamentos.map((agendamento) => (
+                    <div
+                      key={agendamento.idAgendamento}
+                      className="bg-[var(--cinza-300)] border border-[var(--verde-900)] rounded-lg p-4 flex justify-between items-center gap-4"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <div className="flex flex-wrap gap-2">
+                          <span className="font-semibold">Paciente:</span>
+                          <p>
+                            {agendamento.dependente
+                              ? agendamento.dependente.nome
+                              : agendamento.colaborador.nome}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="font-semibold">Médico:</span>
+                          <p>{agendamento.medico.nome}</p>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        <span className="font-semibold">Médico:</span>
-                        <p>{agendamento.medico.nome}</p>
-                      </div>
-                    </div>
 
-                    <div className="flex flex-col items-end gap-2">
-                      <p className="text-sm text-[var(--cinza-700)]">
-                        {ddmmyyyyHHmm(agendamento.horario)}
-                      </p>
-
-                      {/* DIALOG DETALHES (igual ao seu) */}
-                      <Dialog>
-                        <DialogTrigger
-                          asChild
-                          className="bg-[var(--verde-900)] text-[var(--branco)]"
-                          onClick={() => {
-                            setAgendamentoSelecionado(agendamento);
-                            setModo("detalhe");
-                          }}
+                      <div className="flex flex-col items-end gap-2">
+                        <span
+                          className={`rounded-4xl border-2 px-2 text-sm font-semibold
+                            ${agendamento.status === "CONCLUIDO"
+                              ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)]"
+                              : agendamento.status === "AGENDADO"
+                                ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
+                                : agendamento.status === "FALTOU" || agendamento.status === "CANCELADO"
+                                  ? "bg-[var(--erro-800)] text-[var(--cinza-700)]"
+                                  : "bg-gray-100 text-[var(--cinza-700)]"
+                            }`}
                         >
-                          <Button variant="outline">Detalhar</Button>
-                        </DialogTrigger>
+                          {formatarTexto(agendamento.status)}
+                        </span>
+                        <p className="text-sm text-[var(--cinza-700)]">
+                          {ddmmyyyyHHmm(agendamento.horario)}
+                        </p>
+
+                        {/* DIALOG DETALHES (igual ao seu) */}
+                        <Dialog>
+                          <DialogTrigger
+                            asChild
+                            className="bg-[var(--verde-900)] text-[var(--branco)]"
+                            onClick={() => {
+                              setAgendamentoSelecionado(agendamento);
+                              setModo("detalhe");
+                            }}
+                          >
+                            <Button variant="outline">Detalhar</Button>
+                          </DialogTrigger>
 
                           <DialogContent className="sm:max-w-[720px] bg-[var(--cinza-200)]">
                             <DialogHeader>
@@ -611,11 +625,26 @@ export default function Agendamento() {
                               <>
                                 <div className="space-y-3">
                                   <div className="flex items-baseline gap-2">
-                                    <span className="font-semibold">Paciente</span>
-                                    <span>
-                                      {agendamentoSelecionado.dependente
-                                        ? agendamentoSelecionado.dependente.nome
-                                        : agendamentoSelecionado.colaborador.nome}
+                                    <div className="flex-1 flex items-baseline gap-2">
+                                      <span className="font-semibold">Paciente</span>
+                                      <span>
+                                        {agendamentoSelecionado.dependente
+                                          ? agendamentoSelecionado.dependente.nome
+                                          : agendamentoSelecionado.colaborador.nome}
+                                      </span>
+                                    </div>
+                                    <span
+                                      className={`rounded-4xl border-2 px-2 font-semibold
+                                        ${agendamentoSelecionado.status === "CONCLUIDO"
+                                          ? "bg-[var(--sucesso-800)] text-[var(--cinza-700)]"
+                                          : agendamentoSelecionado.status === "AGENDADO"
+                                            ? "bg-[var(--alerta-800)] text-[var(--cinza-700)]"
+                                            : agendamentoSelecionado.status === "FALTOU" || agendamentoSelecionado.status === "CANCELADO"
+                                              ? "bg-[var(--erro-800)] text-[var(--cinza-700)]"
+                                              : "bg-gray-100 text-[var(--cinza-700)]"
+                                        }`}
+                                    >
+                                      {formatarTexto(agendamentoSelecionado.status)}
                                     </span>
                                   </div>
                                   <div className="flex items-baseline gap-2">
@@ -638,31 +667,32 @@ export default function Agendamento() {
                                   <div className="space-x-4">
                                     <Button
                                       onClick={() => setModo("remarcar")}
-                                      className="gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80 cursor-pointer"
+                                      className="gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                       variant="secondary"
+                                      disabled={agendamentoSelecionado.status === "FALTOU" || agendamentoSelecionado.status === "CANCELADO"}
                                     >
                                       <CalendarIcon size={18} className="text-[var(--branco)]" />
                                       Remarcar
                                     </Button>
                                     <Button
                                       onClick={() => handleMarcarFalta()}
-                                      className="gap-2 bg-[var(--warning)] hover:bg-[var(--warning)]/80 cursor-pointer"
+                                      className="gap-2 bg-[var(--warning)] hover:bg-[var(--warning)]/80 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                       variant="secondary"
-                                      disabled={isCancelLoading}
+                                      disabled={isFaltaLoading || agendamentoSelecionado.status === "FALTOU" || agendamentoSelecionado.status === "CANCELADO"}
                                     >
                                       {isFaltaLoading ? <Spinner /> : <FileSignatureIcon size={18} className="text-[var(--branco)]" />}
 
                                       {isFaltaLoading ? "Marcando..." : "Marcar Falta"}
                                     </Button>
                                     <Button
-                                    onClick={() => handleCancelar()} 
-                                    className="gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80 cursor-pointer"
-                                    variant="secondary"
-                                    disabled={isCancelLoading}
-                                  >
-                                    {isCancelLoading ? <Spinner /> : <X size={18} className="text-[var(--branco)]" />}
-                                    {isCancelLoading ? "Cancelando..." : "Cancelar"}
-                                  </Button>
+                                      onClick={() => handleCancelar()}
+                                      className="gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                      variant="secondary"
+                                      disabled={isCancelLoading || agendamentoSelecionado.status === "FALTOU" || agendamentoSelecionado.status === "CANCELADO"}
+                                    >
+                                      {isCancelLoading ? <Spinner /> : <X size={18} className="text-[var(--branco)]" />}
+                                      {isCancelLoading ? "Cancelando..." : "Cancelar"}
+                                    </Button>
                                   </div>
                                   <DialogClose asChild className="text-[var(--branco)]">
                                     <Button variant="outline" className="gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80 cursor-pointer">
