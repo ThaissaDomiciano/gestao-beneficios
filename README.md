@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gestão de Benefícios — Front-end Web (Painel Administrativo)
 
-## Getting Started
+Este repositório contém a interface web utilizada pelo setor de Gestão de Benefícios para organizar atendimentos, analisar documentos enviados pelos colaboradores, registrar autorizações, acompanhar solicitações e manter o fluxo interno de trabalho centralizado.
 
-First, run the development server:
+O sistema substitui controles manuais, planilhas e conversas dispersas, trazendo mais agilidade e rastreabilidade ao processo de gestão.
 
-```bash
+# 🚀 Funcionalidades Principais
+# 📂 Gestão de Documentos
+
+- Visualização de documentos enviados pelos colaboradores.
+
+- Aprovação, recusa e observações.
+
+- Histórico e status atualizado em tempo real.
+
+# 📅 Gestão de Atendimentos
+
+- Lista completa de atendimentos solicitados.
+
+- Cadastro e edição de atendimentos.
+
+- Controle de status (pendente, concluído, cancelado).
+
+# 👥 Gestão de Colaboradores
+
+- Listagem geral de colaboradores.
+
+- Busca rápida por nome, matrícula ou setor.
+
+- Visualização detalhada das informações.
+
+# 🗂 Gestão de Benefícios
+
+- Controle centralizado de solicitações relacionadas a benefícios.
+
+- Acompanhamento das ocorrências (entregas, devoluções, validações).
+
+- Registro de decisões administrativas.
+
+# 📊 Dashboard (quando aplicável)
+
+- Indicadores gerais.
+
+- Contagem de solicitações por status.
+
+- Visão rápida para o gestor.
+
+# 🔧 Tecnologias Utilizadas
+- Framework
+
+Next.js 
+
+- Estilização
+
+Tailwind CSS
+
+Shadcn/UI
+
+# Instalar dependências
+npm install
+
+# Rodar em desenvolvimento
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# 🎯 Objetivo do Sistema
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Oferecer uma ferramenta web sólida para o setor de Benefícios, garantindo:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Maior organização das solicitações internas;
 
-## Learn More
+- Redução de erros e retrabalho;
 
-To learn more about Next.js, take a look at the following resources:
+- Padronização nos processos;
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Mais agilidade no atendimento ao colaborador.

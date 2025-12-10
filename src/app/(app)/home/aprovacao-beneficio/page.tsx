@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -51,7 +52,7 @@ export default function AprovacaoBeneficio() {
   const [solicitacaoSelecionada, setSolicitacaoSelecionada] = useState<Solicitacao | null>(null);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
-  const [modo, setModo] = useState<"detalhe" | "aprovar">("detalhe");
+  const [modo, setModo] = useState<"detalhe" | "aprovar" | "rejeitar">("detalhe");
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [valorTotal, setValorTotal] = useState<string>("");
   const [valorComDesconto, setValorComDesconto] = useState<string>("");
@@ -62,6 +63,7 @@ export default function AprovacaoBeneficio() {
   const [beneficioSelecionado, setBeneficioSelecionado] = useState<string>(BENEFICIO_ALL);
   const [isAproving, setIsAproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [justificativa, setJustificativa] = useState("")
 
   useEffect(() => {
     buscarSolicitacoes();
@@ -194,6 +196,7 @@ export default function AprovacaoBeneficio() {
     setModo("detalhe");
     setValorTotal((s.valorTotal ?? 0).toString());
     setDesconto((s.desconto ?? 0).toString());
+    setJustificativa("");
     buscarDocumentos(s.id, s.colaborador.id);
   }
 
@@ -256,7 +259,10 @@ export default function AprovacaoBeneficio() {
       const res = await fetch(`${api}/solicitacao/${solicitacaoSelecionada.id}`, {
         method: "PATCH",
         headers: getAuthHeader({ withJsonBody: true }),
-        body: JSON.stringify({ status: "RECUSADA" })
+        body: JSON.stringify({ 
+          status: "RECUSADA", 
+          justificativa: justificativa
+        })
       });
 
       if (!res.ok) {
@@ -462,26 +468,17 @@ export default function AprovacaoBeneficio() {
                               </Button>
 
                               <Button 
-                                onClick={rejeitarSolicitacao}
-                                disabled={isRejecting}
-                                variant="outline" 
+                                onClick={() => setModo("rejeitar")}
+                                variant="outline"
                                 className="w-full sm:w-auto gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80 text-[var(--branco)]"
                               >
-                                {isRejecting ? (
-                                  <>
-                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                                    Rejeitando...
-                                  </>
-                                ) : (
-                                  <>
-                                    <X size={18} className="text-[var(--branco)]" />
-                                    Rejeitar
-                                  </>
-                                )}
+                                <X size={18} className="text-[var(--branco)]" />
+                                Rejeitar
                               </Button>
+
                             </DialogFooter>
                           </>
-                        ) : (
+                        ) : modo === "aprovar" ? (
                           <>
                             <DialogHeader>
                               <DialogTitle className="text-xl sm:text-2xl font-bold text-[var(--verde-900)]">Aprovar solicitação</DialogTitle>
@@ -534,6 +531,56 @@ export default function AprovacaoBeneficio() {
                                   </>
                                 ) : (
                                   <>
+                                    <CircleCheckBig size={18} />
+                                    Confirmar
+                                  </>
+                                )}
+                              </Button>
+                            </DialogFooter>
+                          </>
+                        ) : modo === "rejeitar" ? (
+                          <>
+                            <DialogHeader>
+                              <DialogTitle className="text-xl sm:text-2xl font-bold text-[var(--verde-900)]">
+                                Rejeitar Solicitação
+                              </DialogTitle>
+                            </DialogHeader>
+
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="justificativa">Justificativa da rejeição</Label>
+                                <Textarea
+                                  id="justificativa"
+                                  placeholder="Descreva o motivo da rejeição"
+                                  value={justificativa}
+                                  onChange={(e) => setJustificativa(e.target.value)}
+                                  className="mt-2"
+                                />
+                              </div>
+                            </div>
+
+                            <DialogFooter className="mt-6 flex-col sm:flex-row gap-2">
+                              <Button
+                                variant="outline"
+                                className="w-full sm:w-auto gap-2 text-[var(--branco)] bg-[var(--error)] hover:bg-[var(--error)]/80"
+                                onClick={() => setModo("detalhe")}
+                              >
+                                <X size={18} />  
+                                Cancelar
+                              </Button>
+
+                              <Button
+                                className="w-full sm:w-auto gap-2 text-[var(--branco)] bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80"
+                                onClick={rejeitarSolicitacao}
+                                disabled={isRejecting || !justificativa.trim()}
+                              >
+                                {isRejecting ? (
+                                  <>
+                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                    Rejeitando...
+                                  </>
+                                ) : (
+                                  <>
                                     <Check size={18} />
                                     Confirmar
                                   </>
@@ -541,7 +588,7 @@ export default function AprovacaoBeneficio() {
                               </Button>
                             </DialogFooter>
                           </>
-                        )}
+                        ) : null}
                       </DialogContent>
                     </Dialog>
                   </div>

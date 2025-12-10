@@ -655,15 +655,14 @@ export default function Agendamento() {
                                       {isFaltaLoading ? "Marcando..." : "Marcar Falta"}
                                     </Button>
                                     <Button
-                                      onClick={() => handleMarcarFalta()}
-                                      className="gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80 cursor-pointer"
-                                      variant="secondary"
-                                      disabled={isCancelLoading}
-                                    >
-                                      {isCancelLoading ? <Spinner /> : <X size={18} className="text-[var(--branco)]" />}
-
-                                      {isCancelLoading ? "Cancelando..." : "Cancelar"}
-                                    </Button>
+                                    onClick={() => handleCancelar()} 
+                                    className="gap-2 bg-[var(--error)] hover:bg-[var(--error)]/80 cursor-pointer"
+                                    variant="secondary"
+                                    disabled={isCancelLoading}
+                                  >
+                                    {isCancelLoading ? <Spinner /> : <X size={18} className="text-[var(--branco)]" />}
+                                    {isCancelLoading ? "Cancelando..." : "Cancelar"}
+                                  </Button>
                                   </div>
                                   <DialogClose asChild className="text-[var(--branco)]">
                                     <Button variant="outline" className="gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80 cursor-pointer">
