@@ -462,11 +462,6 @@ export default function AprovacaoBeneficio() {
                             </div>
 
                             <DialogFooter className="mt-6 flex-col sm:flex-row gap-2">
-                              <Button onClick={() => setModo("aprovar")} className="w-full sm:w-auto gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80 text-[var(--branco)]" variant="secondary">
-                                <CircleCheckBig size={18} className="text-[var(--branco)]" />
-                                Aprovar
-                              </Button>
-
                               <Button 
                                 onClick={() => setModo("rejeitar")}
                                 variant="outline"
@@ -475,6 +470,11 @@ export default function AprovacaoBeneficio() {
                                 <X size={18} className="text-[var(--branco)]" />
                                 Rejeitar
                               </Button>
+                              <Button onClick={() => setModo("aprovar")} className="w-full sm:w-auto gap-2 bg-[var(--verde-900)] hover:bg-[var(--verde-900)]/80 text-[var(--branco)]" variant="secondary">
+                                <CircleCheckBig size={18} className="text-[var(--branco)]" />
+                                Aprovar
+                              </Button>
+
 
                             </DialogFooter>
                           </>
